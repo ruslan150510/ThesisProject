@@ -1,0 +1,205 @@
+package main.model;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+@Entity
+@Table(name = "posts")
+public class Post
+{
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
+
+    @Column(name = "is_active", nullable = false)
+    private Byte isActive;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(columnDefinition="enum")
+    private Status moderationStatus;
+
+    @Column(name = "moderator_id")
+    private Integer moderatorId;
+
+    @ManyToOne
+    private User user;
+
+    @Column(nullable = false)
+    private LocalDateTime time;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String text;
+
+    @Column(name = "view_count", nullable = false)
+    private Integer viewCount;
+
+    @ManyToMany
+    @JoinTable(name = "Tags2Post",
+            joinColumns = { @JoinColumn(name = "posts_id") },
+            inverseJoinColumns = { @JoinColumn(name = "tags_id") }
+    )
+    private List<Tag> tagList = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<PostComments> commentsList = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<PostsVotes> postsVotesList = new ArrayList<>();
+
+    public Post(Integer id, Byte isActive, Status moderationStatus, Integer moderatorId,
+                User user, LocalDateTime time, String title, String text, Integer viewCount) {
+        this.id = id;
+        this.isActive = isActive;
+        this.moderationStatus = moderationStatus;
+        this.moderatorId = moderatorId;
+        this.user = user;
+        this.time = time;
+        this.title = title;
+        this.text = text;
+        this.viewCount = viewCount;
+    }
+
+    public Post() {
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Byte getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Byte isActive) {
+        this.isActive = isActive;
+    }
+
+    public Status getModerationStatus() {
+        return moderationStatus;
+    }
+
+    public void setModerationStatus(Status moderationStatus) {
+        this.moderationStatus = moderationStatus;
+    }
+
+    public Integer getModeratorId() {
+        return moderatorId;
+    }
+
+    public void setModeratorId(Integer moderatorId) {
+        this.moderatorId = moderatorId;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public LocalDateTime getTime() {
+        return time;
+    }
+
+    public void setTime(LocalDateTime time) {
+        this.time = time;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public Integer getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(Integer viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    public List<Tag> getTagList() {
+        return tagList;
+    }
+
+    public void addTag(Tag tag)
+    {
+        tagList.add(tag);
+        tag.getPostList().add(this);
+    }
+
+    public void removeTag(Tag tag)
+    {
+        tagList.remove(tag);
+        tag.getPostList().remove(this);
+    }
+
+    public List<PostComments> getCommentsList() {
+        return commentsList;
+    }
+
+    public void addComment(PostComments postComments)
+    {
+        commentsList.add(postComments);
+    }
+
+    public void removeComment(PostComments postComments)
+    {
+        commentsList.remove(postComments);
+    }
+
+    public List<PostsVotes> getPostsVotesList() {
+        return postsVotesList;
+    }
+
+    public void addVotes(PostsVotes postsVotes)
+    {
+        postsVotesList.add(postsVotes);
+    }
+
+    public void removeVotes(PostsVotes postsVotes)
+    {
+        postsVotesList.remove(postsVotes);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Post)) return false;
+        Post post = (Post) o;
+        return Objects.equals(getId(), post.getId()) && Objects.equals(getIsActive(),
+                post.getIsActive()) && getModerationStatus() == post.getModerationStatus() &&
+                Objects.equals(getModeratorId(), post.getModeratorId()) && Objects.equals(getUser(),
+                post.getUser()) && Objects.equals(getTime(), post.getTime()) &&
+                Objects.equals(getTitle(), post.getTitle()) && Objects.equals(getText(),
+                post.getText()) && Objects.equals(getViewCount(), post.getViewCount());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getIsActive(), getModerationStatus(), getModeratorId(),
+                getUser(), getTime(), getTitle(), getText(), getViewCount());
+    }
+}
