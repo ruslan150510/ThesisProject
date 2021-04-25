@@ -1,0 +1,17 @@
+DELETE FROM users
+GO
+
+DELETE FROM posts
+GO
+
+DELETE FROM post_votes
+GO
+
+DELETE FROM tags
+GO
+
+DELETE FROM tag2post
+GO
+
+DELETE FROM post_comments
+GO

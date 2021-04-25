@@ -1,4 +1,5 @@
-spring.datasource.url: jdbc:mysql://localhost:3306/db_project?serverTimezone=UTC
-spring.datasource.username: ruslan
-spring.datasource.password: CtntdjqV@hrtnbyu
+spring.datasource.url: jdbc:mysql://localhost:3306/db_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+spring.datasource.username: root
+spring.datasource.password: CtntdjqV@hrtnbyu2021
 spring.jpa.hibernate.ddl-auto: none
+spring.liquibase.change-log: classpath:/db/changelog/db.changelog-master.xml
