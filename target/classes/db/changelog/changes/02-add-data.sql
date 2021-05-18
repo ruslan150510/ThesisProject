@@ -1,23 +1,92 @@
 INSERT INTO users VALUES(1, 1, '2021-04-21', "Ruslan", "rakbashev25@gmail.com", "password", null, null),
-(2, 0, '2021-04-22', "root", "ruslan_15-0510@mail.ru", "password", null, null)
+(2, 0, '2021-04-22', "root", "ruslan_15-0510@mail.ru", "password", null, null),
+(3, 0, '2021-04-22', "user", "mail@mail.ru", "password", null, null),
+(4, 1, '2021-04-22', "user1", "mail1@mail.ru", "password", null, null)
 GO
 
-INSERT INTO posts VALUES(1, 1, "NEW", 1, 1, '2021-04-22', "post_1", "about new post", 0),
-(2, 0, "NEW", 0, 2, '2021-04-22', "post_2", "2 about new post", 1)
+INSERT INTO posts VALUES(1, 1, 2, 1, 1, '2021-04-18', "post_1", "about new post tag_1", 50),
+(2, 1, 2, 1, 2, '2021-04-19', "post_2", "2 about new post tag_1 New_tag", 1),
+(3, 1, 2, 1, 3, '2021-04-20', "post_3", "3 about new post tag_1 New_tag tag_2", 1),
+(4, 0, 1, 1, 4, '2021-04-21', "post_4", "4 about new post tag_1 tag_2", 1),
+(5, 1, 2, 1, 1, '2021-04-22', "post_5", "5 about new post tag_1 New_tag", 1),
+(6, 1, 2, 1, 3, '2021-04-23', "post_6", "6 about new post tag_1 New_tag tag_2", 20),
+(7, 0, 1, 1, 4, '2021-04-23', "post_7", "7 about new post tag_1 tag_2", 1),
+(8, 1, 2, 1, 2, '2021-04-24', "post_8", "8 about new post tag_1 New_tag", 1),
+(9, 1, 2, 1, 1, '2021-04-25', "post_9", "9 about new post tag_1 New_tag tag_2", 1),
+(10, 0, 1, 1, 4, '2021-04-26', "post_10", "10 about new post tag_1 tag_2", 1),
+(11, 1, 2, 1, 2, '2021-04-27', "post_11", "11 about new post tag_1 New_tag", 15),
+(12, 1, 2, 1, 3, '2021-04-28', "post_12", "12 about new post tag_1 New_tag tag_2", 1),
+(13, 0, 1, 1, 1, '2021-04-29', "post_13", "13 about new post tag_1 tag_2", 1),
+(14, 1, 3, 1, 2, '2021-04-29', "post_14", "14 about new post tag_1 New_tag", 1),
+(15, 1, 2, 1, 3, '2021-04-30', "post_15", "15 about new post tag_1 New_tag tag_2", 10),
+(16, 0, 1, 1, 4, '2021-05-01', "post_16", "16 about new post tag_1 tag_2 tag_3", 1)
 GO
 
 INSERT INTO post_votes VALUES(1, 1, 1, '2021-04-22', 1),
-(2, 2, 2, '2021-04-23', 1)
+(2, 2, 2, '2021-04-23', -1),
+(3, 1, 3, '2021-04-24', 1),
+(4, 2, 4, '2021-04-25', -1),
+(5, 2, 5, '2021-04-26', 1),
+(6, 1, 6, '2021-04-27', -1),
+(7, 2, 7, '2021-04-28', 1),
+(8, 2, 8, '2021-04-29', 1),
+(9, 1, 9, '2021-04-30', 1),
+(10, 2, 10, '2021-05-01', 1),
+(11, 2, 11, '2021-05-02', -1),
+(12, 1, 12, '2021-05-03', 1),
+(13, 2, 11, '2021-05-04', 1),
+(14, 2, 12, '2021-05-05', 1),
+(15, 1, 13, '2021-05-06', 1),
+(16, 2, 15, '2021-05-07', 1)
 GO
 
 INSERT INTO tags VALUES(1, "#tag_1"),
-(2, "#New_tag")
+(2, "#New_tag"),
+(3, "#tag_2"),
+(4, "#tag_3")
 GO
 
 INSERT INTO tag2post VALUES(1, 1, 1),
-(2, 2, 2)
+(2, 2, 1),
+(3, 3, 1),
+(4, 4, 1),
+(5, 5, 1),
+(6, 6, 1),
+(7, 7, 1),
+(8, 8, 1),
+(9, 9, 1),
+(10, 10, 1),
+(11, 11, 1),
+(12, 12, 1),
+(13, 13, 1),
+(14, 14, 1),
+(15, 15, 1),
+(16, 16, 1),
+(17, 2, 2),
+(18, 3, 2),
+(19, 5, 2),
+(20, 6, 2),
+(21, 8, 2),
+(22, 9, 2),
+(23, 11, 2),
+(24, 12, 2),
+(25, 14, 2),
+(26, 15, 2),
+(27, 3, 3),
+(28, 4, 3),
+(29, 6, 3),
+(30, 7, 3),
+(31, 9, 3),
+(32, 10, 3),
+(33, 12, 3),
+(34, 13, 3),
+(35, 15, 3),
+(36, 16, 3),
+(37, 16, 4)
 GO
 
 INSERT INTO post_comments VALUES(1, null, 1, 1, '2021-04-22', "comment"),
-(2, null, 2, 2, '2021-04-22', "comment new post")
+(2, null, 2, 2, '2021-04-22', "comment new post"),
+(3, null, 3, 3, '2021-04-22', "comment new post"),
+(4, 1, 4, 4, '2021-04-22', "comment new post")
 GO

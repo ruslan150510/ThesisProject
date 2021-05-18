@@ -14,7 +14,7 @@ GO
 Create Table `posts` (
 `id` INT NOT NULL AUTO_INCREMENT,
 `is_active` TINYINT NOT NULL,
-`moderation_status` ENUM("NEW", "ACCEPTED","DECLINED") NOT NULL,
+`moderation_status` ENUM('NEW', 'ACCEPTED', 'DECLINED') NOT NULL,
 `moderator_id` INT,
 `user_id` INT NOT NULL,
 `time` DATETIME NOT NULL,
@@ -80,7 +80,7 @@ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 INSERT INTO `global_settings` (code, name, value) VALUES
-('MULTIUSER_MODE', 'Многопользовательский режим', 'YES/NO'),
-('POST_PREMODERATION', 'Премодерация постов', 'YES/NO'),
-('STATISTICS_IS_PUBLIC', 'Показывать всем статистику блога', 'YES/NO')
+('MULTIUSER_MODE', 'Многопользовательский режим', 'YES'),
+('POST_PREMODERATION', 'Премодерация постов', 'YES'),
+('STATISTICS_IS_PUBLIC', 'Показывать всем статистику блога', 'YES')
 GO

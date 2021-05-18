@@ -3,13 +3,13 @@ package main.model;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "posts")
-public class Post
-{
+public class Post{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
@@ -17,14 +17,15 @@ public class Post
     @Column(name = "is_active", nullable = false)
     private Byte isActive;
 
-    @Enumerated(EnumType.ORDINAL)
-    @Column(columnDefinition="enum")
+    @Column(name = "moderation_status", columnDefinition = "enum")
+    @Enumerated(EnumType.STRING)
     private Status moderationStatus;
 
     @Column(name = "moderator_id")
     private Integer moderatorId;
 
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(nullable = false)
@@ -40,17 +41,17 @@ public class Post
     private Integer viewCount;
 
     @ManyToMany
-    @JoinTable(name = "Tags2Post",
-            joinColumns = { @JoinColumn(name = "posts_id") },
-            inverseJoinColumns = { @JoinColumn(name = "tags_id") }
+    @JoinTable(name = "Tag2Post",
+            joinColumns = {@JoinColumn(name = "post_id")},
+            inverseJoinColumns = {@JoinColumn(name = "tag_id")}
     )
     private List<Tag> tagList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<PostComments> commentsList = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, mappedBy  =  "post")
+    private List<PostComments> commentList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<PostsVotes> postsVotesList = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "post")
+    private List<PostVotes> postVotesList = new ArrayList<>();
 
     public Post(Integer id, Byte isActive, Status moderationStatus, Integer moderatorId,
                 User user, LocalDateTime time, String title, String text, Integer viewCount) {
@@ -144,44 +145,46 @@ public class Post
         return tagList;
     }
 
-    public void addTag(Tag tag)
-    {
+    public void addTag(Tag tag) {
         tagList.add(tag);
         tag.getPostList().add(this);
     }
 
-    public void removeTag(Tag tag)
-    {
+    public void removeTag(Tag tag) {
         tagList.remove(tag);
         tag.getPostList().remove(this);
     }
 
-    public List<PostComments> getCommentsList() {
-        return commentsList;
+    public List<PostComments> getCommentList() {
+        return commentList;
     }
 
-    public void addComment(PostComments postComments)
-    {
-        commentsList.add(postComments);
+    public void addComment(PostComments postComments) {
+        commentList.add(postComments);
     }
 
-    public void removeComment(PostComments postComments)
-    {
-        commentsList.remove(postComments);
+    public void removeComment(PostComments postComments) {
+        commentList.remove(postComments);
     }
 
-    public List<PostsVotes> getPostsVotesList() {
-        return postsVotesList;
+    public Integer getCountComment(){
+        return commentList.size();
     }
 
-    public void addVotes(PostsVotes postsVotes)
-    {
-        postsVotesList.add(postsVotes);
+    public List<PostVotes> getPostVotesList() {
+        return postVotesList;
     }
 
-    public void removeVotes(PostsVotes postsVotes)
-    {
-        postsVotesList.remove(postsVotes);
+    public void addVotes(PostVotes postVotes) {
+        postVotesList.add(postVotes);
+    }
+
+    public void removeVotes(PostVotes postVotes) {
+        postVotesList.remove(postVotes);
+    }
+
+    public Integer getCountVotes(){
+        return postVotesList.size();
     }
 
     @Override

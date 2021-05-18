@@ -7,28 +7,28 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "Tags")
-public class Tag
-{
+public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String value;
+    private String name;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             fetch = FetchType.LAZY)
-    @JoinTable(name = "Tags2Post",
-            joinColumns = { @JoinColumn(name = "tags_id") },
-            inverseJoinColumns = { @JoinColumn(name = "posts_id") }
+    @JoinTable(name = "Tag2Post",
+            joinColumns = {@JoinColumn(name = "tag_id")},
+            inverseJoinColumns = {@JoinColumn(name = "post_id")}
     )
     private List<Post> postList = new ArrayList<>();
 
     public Tag(Integer id, String value) {
         this.id = id;
-        this.value = value;
+        this.name = value;
     }
 
-    public Tag() {}
+    public Tag() {
+    }
 
     public Integer getId() {
         return id;
@@ -38,12 +38,12 @@ public class Tag
         this.id = id;
     }
 
-    public String getValue() {
-        return value;
+    public String getName() {
+        return name;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<Post> getPostList() {
@@ -59,12 +59,12 @@ public class Tag
         if (this == o) return true;
         if (!(o instanceof Tag)) return false;
         Tag tag = (Tag) o;
-        return Objects.equals(getId(), tag.getId()) && Objects.equals(getValue(),
-                tag.getValue()) && Objects.equals(getPostList(), tag.getPostList());
+        return Objects.equals(getId(), tag.getId()) && Objects.equals(getName(),
+                tag.getName()) && Objects.equals(getPostList(), tag.getPostList());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getValue(), getPostList());
+        return Objects.hash(getId(), getName(), getPostList());
     }
 }

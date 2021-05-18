@@ -34,14 +34,16 @@ public class User
     @Column(columnDefinition = "TEXT")
     private String photo;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy  =  "user")
     private List<Post> postList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<PostComments> commentsList = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    private List<PostComments> commentList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<PostsVotes> postsVotes  = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    private List<PostVotes> postVotes  = new ArrayList<>();
+
+    public User() {}
 
     public User(Integer id, Byte isModerator, LocalDateTime regTime, String name,
                 String email, String password, String code, String photo) {
@@ -133,16 +135,16 @@ public class User
         this.postList.remove(post);
     }
 
-    public List<PostComments> getCommentsList() {
-        return commentsList;
+    public List<PostComments> getCommentList() {
+        return commentList;
     }
 
     public void addCommentsList(PostComments postComments) {
-        commentsList.add(postComments);
+        commentList.add(postComments);
     }
 
     public void removeCommentsList(PostComments postComments) {
-        commentsList.remove(postComments);
+        commentList.remove(postComments);
     }
 
     @Override
