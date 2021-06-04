@@ -18,25 +18,13 @@ public class SettingsService {
         for (GlobalSettings settings : globalSettingsIterable) {
             switch (settings.getCode()) {
                 case "MULTIUSER_MODE":
-                    if (settings.getValue().equals(STATUS)) {
-                        settingsResponse.setMultiuserMode(true);
-                    } else {
-                        settingsResponse.setMultiuserMode(false);
-                    }
+                    settingsResponse.setMultiuserMode(settings.getValue().equals(STATUS));
                     break;
                 case "POST_PREMODERATION":
-                    if (settings.getValue().equals(STATUS)) {
-                        settingsResponse.setPostPremoderation(true);
-                    } else {
-                        settingsResponse.setPostPremoderation(false);
-                    }
+                    settingsResponse.setPostPremoderation(settings.getValue().equals(STATUS));
                     break;
                 case "STATISTICS_IS_PUBLIC":
-                    if (settings.getValue().equals(STATUS)) {
-                        settingsResponse.setStatisticIsPublic(true);
-                    } else {
-                        settingsResponse.setStatisticIsPublic(false);
-                    }
+                    settingsResponse.setStatisticIsPublic(settings.getValue().equals(STATUS));
                     break;
             }
         }

@@ -1,10 +1,13 @@
 package main.controller;
 
 import main.api.response.AuthCheckResponse;
+import main.api.response.CaptchaResponse;
+import main.api.response.UserRegistrationResponse;
+import main.request.UserRequest;
 import main.service.AuthCheckService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api")
@@ -18,5 +21,16 @@ public class ApiAuthController {
     @GetMapping("/auth/check")
     private AuthCheckResponse authCheck() {
         return authCheckService.getStatus();
+    }
+
+    @GetMapping("/auth/captcha")
+    private CaptchaResponse captchaGenerate() throws IOException {
+        return authCheckService.getSecretCode();
+    }
+
+    @PostMapping("/auth/register")
+    @ResponseBody
+    private UserRegistrationResponse userRegistration(@RequestParam UserRequest userRequest){
+        return authCheckService.userRegistrationResponse(userRequest);
     }
 }

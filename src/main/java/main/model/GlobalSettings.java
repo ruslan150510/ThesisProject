@@ -3,6 +3,7 @@ package main.model;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "global_settings")
 public class GlobalSettings
 {
     @Id

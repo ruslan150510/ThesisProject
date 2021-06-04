@@ -4,9 +4,10 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "captcha_codes")
 public class CaptchaCodes {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Integer id;
 
@@ -33,5 +34,21 @@ public class CaptchaCodes {
 
     public String getSecretCode() {
         return secretCode;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setTime(LocalDateTime time) {
+        this.time = time;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setSecretCode(String secretCode) {
+        this.secretCode = secretCode;
     }
 }
