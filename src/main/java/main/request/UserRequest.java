@@ -20,3 +20,9 @@ public class UserRequest {
     @JsonProperty("captcha_secret")
     private String captchaSecret;
 }
+
+//"e_mail":"ru@mail.ru",
+// "password":"123456",
+// "name":"Ru",
+// "captcha":"agejorerro",
+// "captcha_secret":"agejoremo"

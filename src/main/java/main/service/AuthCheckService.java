@@ -81,7 +81,7 @@ public class AuthCheckService {
         int count = 0;
         if (userRepository.findByLastId() > 0)
         {
-            count = userRepository.findByLastId();
+            count = userRepository.findByLastId() + 1;
         }
         User user = new User();
         user.setId(count);

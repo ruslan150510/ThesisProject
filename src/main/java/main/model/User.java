@@ -11,7 +11,7 @@ import java.util.Objects;
 public class User
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "is_moderator", nullable = false)

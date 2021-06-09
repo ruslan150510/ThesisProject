@@ -5,6 +5,7 @@ import main.api.response.CaptchaResponse;
 import main.api.response.UserRegistrationResponse;
 import main.request.UserRequest;
 import main.service.AuthCheckService;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class ApiAuthController {
 
     @PostMapping("/auth/register")
     @ResponseBody
-    private UserRegistrationResponse userRegistration(@RequestParam UserRequest userRequest){
+    private UserRegistrationResponse userRegistration(@RequestBody UserRequest userRequest){
         return authCheckService.userRegistrationResponse(userRequest);
     }
 }
