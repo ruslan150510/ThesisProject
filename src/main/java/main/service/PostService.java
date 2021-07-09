@@ -6,12 +6,12 @@ import main.api.response.OutputPostResponse;
 import main.api.response.PostResponse;
 import main.dto.*;
 import main.model.*;
+import main.model.repository.PostRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneOffset;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 

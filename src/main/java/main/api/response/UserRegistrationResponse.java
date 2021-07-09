@@ -1,23 +1,14 @@
 package main.api.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
 public class UserRegistrationResponse {
     private boolean result;
 
-    private ErrorResponse error;
-
-    public boolean isResult() {
-        return result;
-    }
-
-    public void setResult(boolean result) {
-        this.result = result;
-    }
-
-    public ErrorResponse getError() {
-        return error;
-    }
-
-    public void setError(ErrorResponse error) {
-        this.error = error;
-    }
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private ErrorsResponse errors;
 }

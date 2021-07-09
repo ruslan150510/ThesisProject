@@ -4,8 +4,6 @@ import main.api.response.*;
 import main.service.CalendarService;
 import main.service.PostService;
 import main.service.TagService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

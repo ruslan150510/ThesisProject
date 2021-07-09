@@ -2,7 +2,7 @@ package main.service;
 
 import main.api.response.CalendarResponse;
 import main.model.Post;
-import main.model.PostRepository;
+import main.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

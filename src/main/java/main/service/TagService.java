@@ -2,9 +2,9 @@ package main.service;
 
 import main.api.response.TagsListResponse;
 import main.api.response.TagsResponse;
-import main.model.PostRepository;
+import main.model.repository.PostRepository;
 import main.model.Tag;
-import main.model.TagRepository;
+import main.model.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

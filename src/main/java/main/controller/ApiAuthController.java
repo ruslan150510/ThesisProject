@@ -1,5 +1,7 @@
 package main.controller;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import main.api.response.AuthCheckResponse;
 import main.api.response.CaptchaResponse;
 import main.api.response.UserRegistrationResponse;
