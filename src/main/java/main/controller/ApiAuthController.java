@@ -1,13 +1,14 @@
 package main.controller;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import main.api.response.AuthCheckResponse;
 import main.api.response.CaptchaResponse;
+import main.api.response.LoginResponse;
 import main.api.response.UserRegistrationResponse;
+import main.request.LoginRequest;
 import main.request.UserRequest;
 import main.service.AuthCheckService;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.http.ResponseEntity;
+//import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -36,4 +37,10 @@ public class ApiAuthController {
     private UserRegistrationResponse userRegistration(@RequestBody UserRequest userRequest){
         return authCheckService.userRegistrationResponse(userRequest);
     }
+
+//    @PostMapping("/auth/login")
+//    @ResponseBody
+//    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest){
+//        return ResponseEntity.ok(authCheckService.loginResponse(loginRequest));
+//    }
 }

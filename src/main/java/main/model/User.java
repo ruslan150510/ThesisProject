@@ -43,6 +43,11 @@ public class User
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private List<PostVotes> postVotes  = new ArrayList<>();
 
+//    public Role getRole()
+//    {
+//        return isModerator == 1 ? Role.MODERATOR: Role.USER;
+//    }
+
     public User() {}
 
     public User(Integer id, Byte isModerator, LocalDateTime regTime, String name,

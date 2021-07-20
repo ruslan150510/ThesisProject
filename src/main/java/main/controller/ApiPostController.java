@@ -4,6 +4,8 @@ import main.api.response.*;
 import main.service.CalendarService;
 import main.service.PostService;
 import main.service.TagService;
+import org.springframework.http.ResponseEntity;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,50 +26,60 @@ public class ApiPostController {
     }
 
     @GetMapping("/post")
+//    @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
-    public OutputPostResponse getOutputPostResponse(@RequestParam Integer offset,
-                                                    @RequestParam Integer limit,
-                                                    @RequestParam Mode mode) {
-        return postService.getPosts(offset, limit, mode, requestText, DATE_TIME, tagFromPost);
+    public ResponseEntity<OutputPostResponse> getOutputPostResponse(@RequestParam(defaultValue = "0") Integer offset,
+                                                                   @RequestParam(defaultValue = "10") Integer limit,
+                                                                   @RequestParam(defaultValue = "recent") Mode mode) {
+
+        return ResponseEntity.ok(postService.getPosts(offset, limit, mode, requestText, DATE_TIME, tagFromPost));
     }
 
     @GetMapping("/tag")
-    public TagsResponse getTagsResponse() {
-        return tagService.getTags();
+    public ResponseEntity<TagsResponse> getTagsResponse() {
+        return ResponseEntity.ok(tagService.getTags());
     }
 
     @GetMapping("/post/search")
+//    @PreAuthorize("hasAuthority('user:moderate')")
     @ResponseBody
-    public OutputPostResponse getOutputPostSearchResponse(@RequestParam Integer offset,
-                                                          @RequestParam Integer limit,
-                                                          @RequestParam String query) {
-        return postService.getPosts(offset, limit, Mode.recent, query, DATE_TIME, tagFromPost);
+    public ResponseEntity<OutputPostResponse> getOutputPostSearchResponse
+            (@RequestParam(defaultValue = "0") Integer offset,
+             @RequestParam(defaultValue = "10") Integer limit,
+             @RequestParam(defaultValue = " ") String query) {
+        return ResponseEntity.ok(postService.getPosts(offset, limit, Mode.recent, query, DATE_TIME, tagFromPost));
     }
 
     @GetMapping("/calendar")
     @ResponseBody
-    public CalendarResponse getCalendarResponse(@RequestParam Integer year) {
-        return calendarService.getCalendarResponse(year);
+    public ResponseEntity<CalendarResponse> getCalendarResponse(@RequestParam Integer year) {
+        return ResponseEntity.ok(calendarService.getCalendarResponse(year));
     }
 
     @GetMapping("/post/byDate")
     @ResponseBody
-    public OutputPostResponse getOutputPostByDateResponse(@RequestParam Integer offset,
-                                                          @RequestParam Integer limit,
-                                                          @RequestParam String date) {
-        return postService.getPosts(offset, limit, Mode.recent, requestText, date, tagFromPost);
+    public ResponseEntity<OutputPostResponse> getOutputPostByDateResponse
+            (@RequestParam(defaultValue = "0") Integer offset,
+             @RequestParam(defaultValue = "10") Integer limit,
+             @RequestParam String date) {
+        return ResponseEntity.ok(postService.getPosts(offset, limit, Mode.recent, requestText, date, tagFromPost));
     }
 
     @GetMapping("/post/byTag")
     @ResponseBody
-    public OutputPostResponse getOutputPostByTagResponse(@RequestParam int offset,
-                                                         @RequestParam int limit,
-                                                         @RequestParam String tag) {
-        return postService.getPosts(offset, limit, Mode.recent, requestText, DATE_TIME, tag);
+    public ResponseEntity<OutputPostResponse> getOutputPostByTagResponse
+            (@RequestParam(defaultValue = "0") Integer offset,
+             @RequestParam(defaultValue = "10") Integer limit,
+             @RequestParam String tag) {
+        return ResponseEntity.ok(postService.getPosts(offset, limit, Mode.recent, requestText, DATE_TIME, tag));
     }
 
     @GetMapping("/post/{id}")
-    public PostResponse getPostResponse(@PathVariable int id) {
-        return postService.postResponse(id);
+    public ResponseEntity<PostResponse> getPostResponse(@PathVariable int id) {
+        if (postService.postResponse(id).equals(null))
+        {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(postService.postResponse(id));
     }
 }

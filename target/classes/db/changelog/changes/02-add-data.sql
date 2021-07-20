@@ -1,7 +1,7 @@
-INSERT INTO users VALUES(1, 1, '2021-04-18 02:30:22', "Ruslan", "rakbashev25@gmail.com", "password", null, null),
-(2, 0, '2021-04-18 08:30:22', "root", "ruslan_15-0510@mail.ru", "password", null, null),
-(3, 0, '2021-04-18 12:30:22', "user", "mail@mail.ru", "password", null, null),
-(4, 1, '2021-04-18 22:30:22', "user1", "mail1@mail.ru", "password", null, null)
+INSERT INTO users VALUES(1, 1, '2021-04-18 02:30:22', "Ruslan", "rakbashev25@gmail.com", "$2y$12$sxVuUjVKusqLLvX5I6FwNuDaTgEQJMdJTg8uGurh/eWxQnSyN8Njq", null, null),
+(2, 0, '2021-04-18 08:30:22', "root", "ruslan_15-0510@mail.ru", "$2y$12$sxVuUjVKusqLLvX5I6FwNuDaTgEQJMdJTg8uGurh/eWxQnSyN8Njq", null, null),
+(3, 0, '2021-04-18 12:30:22', "user", "mail@mail.ru", "$2y$12$sxVuUjVKusqLLvX5I6FwNuDaTgEQJMdJTg8uGurh/eWxQnSyN8Njq", null, null),
+(4, 1, '2021-04-18 22:30:22', "user1", "mail1@mail.ru", "$2y$12$sxVuUjVKusqLLvX5I6FwNuDaTgEQJMdJTg8uGurh/eWxQnSyN8Njq", null, null)
 GO
 
 INSERT INTO posts VALUES(1, 1, 2, 1, 1, '2021-04-18 02:35:22', "post_1", "about new post tag_1", 50),

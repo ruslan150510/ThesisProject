@@ -77,6 +77,9 @@ public class PostService {
     public PostResponse postResponse(int id) {
         PostResponse postResponse = new PostResponse();
         Optional<Post> postOptional = postRepository.findById(id);
+        if(!postOptional.isPresent()) {
+            return null;
+        }
         postResponse.setPostId(id);
         postResponse.setTitle(postOptional.get().getTitle());
         postResponse.setText(postOptional.get().getText());

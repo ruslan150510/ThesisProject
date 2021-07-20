@@ -33,11 +33,18 @@ public class AuthCheckService {
     private static final String PASSWORD = "Пароль короче 6-ти символов";
     private static final String CAPTCHA = "Код с картинки введён неверно";
 
+//    private final AuthenticationManager authenticationManager;
+
     @Autowired
     private CaptchaCodesRepository captchaCodesRepository;
 
     @Autowired
     private UserRepository userRepository;
+
+//    @Autowired
+//    public AuthCheckService(AuthenticationManager authenticationManager) {
+//        this.authenticationManager = authenticationManager;
+//    }
 
     public AuthCheckResponse getStatus() {
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();
@@ -61,17 +68,12 @@ public class AuthCheckService {
         Float compressRatio = oldCage.getCompressRatio();
         IGenerator<String> tokenGenerator = oldCage.getTokenGenerator();
         Cage cage = new Cage(painter, fonts, foregrounds, format, compressRatio, tokenGenerator, rnd);
-        int count = 0;
-        if (captchaCodesRepository.count() > count) {
-            count = captchaCodesRepository.findLastId();
-        }
 
         String secret = cage.getTokenGenerator().next();
         byte[] readString = cage.draw(secret);
         String imageEncoding = Base64.getEncoder().encodeToString(readString);
 
         CaptchaCodes captchaCodes = new CaptchaCodes();
-        captchaCodes.setId(++count);
         captchaCodes.setTime(time.atOffset(ZoneOffset.UTC).toLocalDateTime());
         captchaCodes.setCode(secret);
         captchaCodes.setSecretCode(secret);
@@ -86,16 +88,12 @@ public class AuthCheckService {
     public UserRegistrationResponse userRegistrationResponse(UserRequest userRequest) {
         UserRegistrationResponse userRegistrationResponse = new UserRegistrationResponse();
         LocalDateTime time = ZonedDateTime.now().toLocalDateTime();
-        int count = 0;
-        if (userRepository.findByLastId() > 0) {
-            count = userRepository.findByLastId() + 1;
-        }
-//        String captchaInDb = captchaCodesRepository.findBySecretCode(userRequest.getCaptcha());
-//        System.out.println(userRepository.findByEmail(userRequest.getEmail()));
-        if (userRequest.getCaptchaSecret().equals(userRequest.getCaptcha())
-                && !(userRepository.findByEmail(userRequest.getEmail()) > 0)) {
+        if (userRequest.getCaptchaSecret().equals(userRequest.getCaptcha()) &&
+                (!userRepository.findByEmail(userRequest.getEmail()).isPresent()) &&
+                (userRequest.getPassword().length() > 5) &&
+                (userRequest.getUserName().replaceAll("[0-9]", "")
+                        .replaceAll(" ", "").length() > 0)) {
             User user = new User();
-            user.setId(count);
             user.setEmail(userRequest.getEmail());
             user.setName(userRequest.getUserName());
             user.setPassword(userRequest.getPassword());
@@ -104,16 +102,51 @@ public class AuthCheckService {
             user.setRegTime(time.atOffset(ZoneOffset.UTC).toLocalDateTime());
             userRepository.save(user);
             userRegistrationResponse.setResult(true);
-        }
-        else {
+        } else {
             ErrorsResponse errorsResponse = new ErrorsResponse();
-            errorsResponse.setEmail(EMAIL);
-            errorsResponse.setName(NAME);
-            errorsResponse.setPassword(PASSWORD);
-            errorsResponse.setCaptcha(CAPTCHA);
+            errorsResponse.setEmail(
+                    userRepository.findByEmail(userRequest.getEmail()).isPresent() ? EMAIL : null);
+            errorsResponse.setName(userRequest.getUserName().replaceAll("[0-9]", "")
+                    .replaceAll(" ", "").length() == 0 ? NAME : null);
+            errorsResponse.setPassword(userRequest.getPassword().length() < 6 ? PASSWORD : null);
+            errorsResponse.setCaptcha(
+                    !userRequest.getCaptchaSecret().equals(userRequest.getCaptcha()) ? CAPTCHA : null);
             userRegistrationResponse.setResult(false);
             userRegistrationResponse.setErrors(errorsResponse);
         }
         return userRegistrationResponse;
     }
+
+//    public LoginResponse loginResponse(LoginRequest loginRequest){
+//        Authentication authentication =
+//                authenticationManager.authenticate(
+//                        new UsernamePasswordAuthenticationToken(
+//                                loginRequest.getEmail(),
+//                                loginRequest.getPassword()
+//                        )
+//                );
+//        SecurityContextHolder.getContext()
+//                .setAuthentication(authentication);
+//        org.springframework.security.core.userdetails.User user =
+//                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+//        return getLoginResponse(user.getUsername());
+//    }
+
+//    public LoginResponse getLoginResponse(String name){
+//        User currentUser = userRepository
+//                .findByEmail(name).orElseThrow(
+//                        ()-> new UsernameNotFoundException(name));
+//        UserLoginResponse userLoginResponse =
+//                new UserLoginResponse();
+//        userLoginResponse.setEmail(currentUser.getEmail());
+//        userLoginResponse.setModeration(currentUser.getIsModerator()==1);
+//        userLoginResponse.setId(currentUser.getId());
+//        userLoginResponse.setPhoto(currentUser.getPhoto());
+//        userLoginResponse.setName(currentUser.getName());
+//
+//        LoginResponse loginResponse = new LoginResponse();
+//        loginResponse.setResult(true);
+//        loginResponse.setUserLoginResponse(userLoginResponse);
+//        return loginResponse;
+//    }
 }
