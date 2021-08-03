@@ -54,10 +54,16 @@ public class AuthCheckService {
         this.authenticationManager = authenticationManager;
     }
 
-    public AuthCheckResponse getStatus() {
-        AuthCheckResponse authCheckResponse = new AuthCheckResponse();
-        authCheckResponse.setResult(false);
-        return authCheckResponse;
+
+    public LoginResponse getStatus(Principal principal) {
+        if (principal == null)
+        {
+            return new LoginResponse();
+        }
+        else
+        {
+            return getLoginResponse(principal.getName());
+        }
     }
 
     public CaptchaResponse getSecretCode() throws IOException {
@@ -164,7 +170,7 @@ public class AuthCheckService {
 
     public LogoutResponse logoutResponse(Principal principal) {
         if (principal != null) {
-            SecurityContextHolder.getContext().getAuthentication().getAuthorities().remove(principal.getName());
+            SecurityContextHolder.getContext().getAuthentication().setAuthenticated(false);
         }
         LogoutResponse logoutResponse = new LogoutResponse();
         logoutResponse.setResult(true);

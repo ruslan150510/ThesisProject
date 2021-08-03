@@ -29,7 +29,7 @@ public class ApiPostController {
     }
 
     @GetMapping("/post")
-    @PreAuthorize("hasAuthority('user:write')")
+//    @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getOutputPostResponse(@RequestParam(defaultValue = "0") Integer offset,
                                                                     @RequestParam(defaultValue = "10") Integer limit,
@@ -44,7 +44,7 @@ public class ApiPostController {
     }
 
     @GetMapping("/post/search")
-    @PreAuthorize("hasAuthority('user:moderate')")
+//    @PreAuthorize("hasAuthority('user:moderate')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getOutputPostSearchResponse
             (@RequestParam(defaultValue = "0") Integer offset,
