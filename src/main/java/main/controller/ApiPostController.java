@@ -1,12 +1,15 @@
 package main.controller;
 
 import main.api.response.*;
+import main.model.ModerationStatus;
 import main.service.CalendarService;
 import main.service.PostService;
 import main.service.TagService;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api")
@@ -26,11 +29,11 @@ public class ApiPostController {
     }
 
     @GetMapping("/post")
-//    @PreAuthorize("hasAuthority('user:write')")
+    @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getOutputPostResponse(@RequestParam(defaultValue = "0") Integer offset,
-                                                                   @RequestParam(defaultValue = "10") Integer limit,
-                                                                   @RequestParam(defaultValue = "recent") Mode mode) {
+                                                                    @RequestParam(defaultValue = "10") Integer limit,
+                                                                    @RequestParam(defaultValue = "recent") Mode mode) {
 
         return ResponseEntity.ok(postService.getPosts(offset, limit, mode, requestText, DATE_TIME, tagFromPost));
     }
@@ -41,12 +44,12 @@ public class ApiPostController {
     }
 
     @GetMapping("/post/search")
-//    @PreAuthorize("hasAuthority('user:moderate')")
+    @PreAuthorize("hasAuthority('user:moderate')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getOutputPostSearchResponse
             (@RequestParam(defaultValue = "0") Integer offset,
              @RequestParam(defaultValue = "10") Integer limit,
-             @RequestParam(defaultValue = " ") String query) {
+             @RequestParam String query) {
         return ResponseEntity.ok(postService.getPosts(offset, limit, Mode.recent, query, DATE_TIME, tagFromPost));
     }
 
@@ -76,10 +79,18 @@ public class ApiPostController {
 
     @GetMapping("/post/{id}")
     public ResponseEntity<PostResponse> getPostResponse(@PathVariable int id) {
-        if (postService.postResponse(id).equals(null))
-        {
+        if (postService.postResponse(id).equals(null)) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(postService.postResponse(id));
+    }
+
+    @GetMapping("/post/my")//требуется авторизация
+    @ResponseBody
+    public ResponseEntity<OutputPostResponse> getMyPosts(Principal principal,
+               @RequestParam(defaultValue = "0") Integer offset,
+               @RequestParam(defaultValue = "10") Integer limit,
+               @RequestParam(defaultValue = "inactive") ModerationStatus status) {
+        return ResponseEntity.ok(postService.getMyPosts(principal, offset, limit, status));
     }
 }

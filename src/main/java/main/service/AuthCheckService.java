@@ -4,20 +4,25 @@ import com.github.cage.Cage;
 import com.github.cage.GCage;
 import com.github.cage.IGenerator;
 import com.github.cage.image.Painter;
-import main.api.response.AuthCheckResponse;
-import main.api.response.CaptchaResponse;
-import main.api.response.ErrorsResponse;
-import main.api.response.UserRegistrationResponse;
+import main.api.response.*;
 import main.model.CaptchaCodes;
 import main.model.User;
 import main.model.repository.CaptchaCodesRepository;
+import main.model.repository.PostRepository;
 import main.model.repository.UserRepository;
+import main.request.LoginRequest;
 import main.request.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.io.IOException;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -33,7 +38,7 @@ public class AuthCheckService {
     private static final String PASSWORD = "Пароль короче 6-ти символов";
     private static final String CAPTCHA = "Код с картинки введён неверно";
 
-//    private final AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
     private CaptchaCodesRepository captchaCodesRepository;
@@ -41,10 +46,13 @@ public class AuthCheckService {
     @Autowired
     private UserRepository userRepository;
 
-//    @Autowired
-//    public AuthCheckService(AuthenticationManager authenticationManager) {
-//        this.authenticationManager = authenticationManager;
-//    }
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    public AuthCheckService(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
 
     public AuthCheckResponse getStatus() {
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();
@@ -69,7 +77,8 @@ public class AuthCheckService {
         IGenerator<String> tokenGenerator = oldCage.getTokenGenerator();
         Cage cage = new Cage(painter, fonts, foregrounds, format, compressRatio, tokenGenerator, rnd);
 
-        String secret = cage.getTokenGenerator().next();
+        String secret = cage.getTokenGenerator().next().substring(0,
+                cage.getTokenGenerator().next().length() - 4);
         byte[] readString = cage.draw(secret);
         String imageEncoding = Base64.getEncoder().encodeToString(readString);
 
@@ -117,36 +126,48 @@ public class AuthCheckService {
         return userRegistrationResponse;
     }
 
-//    public LoginResponse loginResponse(LoginRequest loginRequest){
-//        Authentication authentication =
-//                authenticationManager.authenticate(
-//                        new UsernamePasswordAuthenticationToken(
-//                                loginRequest.getEmail(),
-//                                loginRequest.getPassword()
-//                        )
-//                );
-//        SecurityContextHolder.getContext()
-//                .setAuthentication(authentication);
-//        org.springframework.security.core.userdetails.User user =
-//                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-//        return getLoginResponse(user.getUsername());
-//    }
+    public LoginResponse loginResponse(LoginRequest loginRequest) {
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                loginRequest.getEmail(),
+                                loginRequest.getPassword()
+                        )
+                );
+        SecurityContextHolder.getContext()
+                .setAuthentication(authentication);
+        org.springframework.security.core.userdetails.User user =
+                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+        return getLoginResponse(user.getUsername());
+    }
 
-//    public LoginResponse getLoginResponse(String name){
-//        User currentUser = userRepository
-//                .findByEmail(name).orElseThrow(
-//                        ()-> new UsernameNotFoundException(name));
-//        UserLoginResponse userLoginResponse =
-//                new UserLoginResponse();
-//        userLoginResponse.setEmail(currentUser.getEmail());
-//        userLoginResponse.setModeration(currentUser.getIsModerator()==1);
-//        userLoginResponse.setId(currentUser.getId());
-//        userLoginResponse.setPhoto(currentUser.getPhoto());
-//        userLoginResponse.setName(currentUser.getName());
-//
-//        LoginResponse loginResponse = new LoginResponse();
-//        loginResponse.setResult(true);
-//        loginResponse.setUserLoginResponse(userLoginResponse);
-//        return loginResponse;
-//    }
+    public LoginResponse getLoginResponse(String email) {
+        User currentUser = userRepository
+                .findByEmail(email).orElseThrow(
+                        () -> new UsernameNotFoundException(email));
+        UserLoginResponse userLoginResponse =
+                new UserLoginResponse();
+        userLoginResponse.setEmail(currentUser.getEmail());
+        userLoginResponse.setModeration(currentUser.getIsModerator() == 1);
+        userLoginResponse.setSetting(currentUser.getIsModerator() == 1);
+        userLoginResponse.setId(currentUser.getId());
+        userLoginResponse.setPhoto(currentUser.getPhoto());
+        userLoginResponse.setName(currentUser.getName());
+        userLoginResponse.setModerationCount(
+                currentUser.getIsModerator() == 1 ? postRepository.findByModerationPost().get() : 0);
+
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setResult(true);
+        loginResponse.setUserLoginResponse(userLoginResponse);
+        return loginResponse;
+    }
+
+    public LogoutResponse logoutResponse(Principal principal) {
+        if (principal != null) {
+            SecurityContextHolder.getContext().getAuthentication().getAuthorities().remove(principal.getName());
+        }
+        LogoutResponse logoutResponse = new LogoutResponse();
+        logoutResponse.setResult(true);
+        return logoutResponse;
+    }
 }

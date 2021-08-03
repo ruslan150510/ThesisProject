@@ -34,19 +34,19 @@ public class User
     @Column(columnDefinition = "TEXT")
     private String photo;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy  =  "user")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy  =  "user", fetch = FetchType.LAZY)
     private List<Post> postList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     private List<PostComments> commentList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     private List<PostVotes> postVotes  = new ArrayList<>();
 
-//    public Role getRole()
-//    {
-//        return isModerator == 1 ? Role.MODERATOR: Role.USER;
-//    }
+    public Role getRole()
+    {
+        return isModerator == 1 ? Role.MODERATOR: Role.USER;
+    }
 
     public User() {}
 

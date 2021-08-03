@@ -187,6 +187,10 @@ public class Post{
         return postVotesList.size();
     }
 
+    public Integer getPostVotes(){
+        return postVotesList.stream().mapToInt(PostVotes::getValue).sum();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

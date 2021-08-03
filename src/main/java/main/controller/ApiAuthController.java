@@ -1,17 +1,15 @@
 package main.controller;
 
-import main.api.response.AuthCheckResponse;
-import main.api.response.CaptchaResponse;
-import main.api.response.LoginResponse;
-import main.api.response.UserRegistrationResponse;
+import main.api.response.*;
 import main.request.LoginRequest;
 import main.request.UserRequest;
 import main.service.AuthCheckService;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api")
@@ -38,9 +36,14 @@ public class ApiAuthController {
         return authCheckService.userRegistrationResponse(userRequest);
     }
 
-//    @PostMapping("/auth/login")
-//    @ResponseBody
-//    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest){
-//        return ResponseEntity.ok(authCheckService.loginResponse(loginRequest));
-//    }
+    @PostMapping("/auth/login")
+    @ResponseBody
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest){
+        return ResponseEntity.ok(authCheckService.loginResponse(loginRequest));
+    }
+
+    @GetMapping("/auth/logout")
+    public ResponseEntity<LogoutResponse> logout(Principal principal){
+        return ResponseEntity.ok(authCheckService.logoutResponse(principal));
+    }
 }
