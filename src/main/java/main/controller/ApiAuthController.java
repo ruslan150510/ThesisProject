@@ -46,4 +46,9 @@ public class ApiAuthController {
     public ResponseEntity<LogoutResponse> logout(Principal principal){
         return ResponseEntity.ok(authCheckService.logoutResponse(principal));
     }
+
+//    @PostMapping("/image")
+//    public ResponseEntity<ImageUploadResponse> uploadImage(Principal principal){
+//        return
+//    }
 }

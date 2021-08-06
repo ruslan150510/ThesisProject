@@ -2,9 +2,12 @@ package main.controller;
 
 import main.api.response.*;
 import main.model.ModerationStatus;
+import main.request.CommentRequest;
+import main.request.NewPostRequest;
 import main.service.CalendarService;
 import main.service.PostService;
 import main.service.TagService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +21,7 @@ public class ApiPostController {
     private final TagService tagService;
     private final CalendarService calendarService;
     private static final String DATE_TIME = "0001-01-01";
+    private static final Integer ID_DEFAULT = -1;
     private String requestText = "";
     private String tagFromPost = "";
 
@@ -92,5 +96,38 @@ public class ApiPostController {
                @RequestParam(defaultValue = "10") Integer limit,
                @RequestParam(defaultValue = "inactive") ModerationStatus status) {
         return ResponseEntity.ok(postService.getMyPosts(principal, offset, limit, status));
+    }
+
+    @GetMapping("/post/moderation")//требуется авторизация + модератор
+    @ResponseBody
+    public ResponseEntity<OutputPostResponse> getModerationPosts(Principal principal,
+                                                         @RequestParam(defaultValue = "0") Integer offset,
+                                                         @RequestParam(defaultValue = "10") Integer limit,
+                                                         @RequestParam(defaultValue = "new") String status) {
+            return ResponseEntity.ok(postService.getModerationPosts(principal, offset, limit, status));
+    }
+
+    @PostMapping("/post")//требуется авторизация
+    @ResponseBody
+    public ResponseEntity<NewPostResponse> createNewPost(Principal principal,
+                                                         @RequestBody NewPostRequest newPostRequest){
+        return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest, ID_DEFAULT));
+    }
+
+
+
+    @PutMapping("/post/{id}")//требуется авторизация + авторизация + модератор
+    public ResponseEntity<NewPostResponse> putPost(Principal principal,
+                                                @RequestBody NewPostRequest newPostRequest,
+                                                @PathVariable int id) {
+        return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest, id));
+    }
+
+    @PostMapping("/comment")//требуется авторизация
+    public ResponseEntity<NewPostResponse> addCommentPost(Principal principal,
+                                                          @RequestBody CommentRequest commentRequest){
+        return new ResponseEntity<>(postService.addComment(principal, commentRequest),
+                !postService.addComment(principal, commentRequest).isResult()
+                        ? HttpStatus.BAD_REQUEST : HttpStatus.OK);
     }
 }

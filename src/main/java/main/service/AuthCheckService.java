@@ -38,6 +38,8 @@ public class AuthCheckService {
     private static final String PASSWORD = "Пароль короче 6-ти символов";
     private static final String CAPTCHA = "Код с картинки введён неверно";
 
+    private static final Integer PASSWORD_LENGTH = 6;
+
     private final AuthenticationManager authenticationManager;
 
     @Autowired
@@ -105,7 +107,7 @@ public class AuthCheckService {
         LocalDateTime time = ZonedDateTime.now().toLocalDateTime();
         if (userRequest.getCaptchaSecret().equals(userRequest.getCaptcha()) &&
                 (!userRepository.findByEmail(userRequest.getEmail()).isPresent()) &&
-                (userRequest.getPassword().length() > 5) &&
+                (userRequest.getPassword().length() >= PASSWORD_LENGTH) &&
                 (userRequest.getUserName().replaceAll("[0-9]", "")
                         .replaceAll(" ", "").length() > 0)) {
             User user = new User();
@@ -118,33 +120,39 @@ public class AuthCheckService {
             userRepository.save(user);
             userRegistrationResponse.setResult(true);
         } else {
-            ErrorsResponse errorsResponse = new ErrorsResponse();
-            errorsResponse.setEmail(
+            ErrorsRegistrationResponse errorsRegistrationResponse = new ErrorsRegistrationResponse();
+            errorsRegistrationResponse.setEmail(
                     userRepository.findByEmail(userRequest.getEmail()).isPresent() ? EMAIL : null);
-            errorsResponse.setName(userRequest.getUserName().replaceAll("[0-9]", "")
+            errorsRegistrationResponse.setName(userRequest.getUserName().replaceAll("[0-9]", "")
                     .replaceAll(" ", "").length() == 0 ? NAME : null);
-            errorsResponse.setPassword(userRequest.getPassword().length() < 6 ? PASSWORD : null);
-            errorsResponse.setCaptcha(
+            errorsRegistrationResponse.setPassword(userRequest.getPassword().length() < PASSWORD_LENGTH
+                    ? PASSWORD : null);
+            errorsRegistrationResponse.setCaptcha(
                     !userRequest.getCaptchaSecret().equals(userRequest.getCaptcha()) ? CAPTCHA : null);
             userRegistrationResponse.setResult(false);
-            userRegistrationResponse.setErrors(errorsResponse);
+            userRegistrationResponse.setErrors(errorsRegistrationResponse);
         }
         return userRegistrationResponse;
     }
 
     public LoginResponse loginResponse(LoginRequest loginRequest) {
-        Authentication authentication =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                loginRequest.getEmail(),
-                                loginRequest.getPassword()
-                        )
-                );
-        SecurityContextHolder.getContext()
-                .setAuthentication(authentication);
-        org.springframework.security.core.userdetails.User user =
-                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-        return getLoginResponse(user.getUsername());
+        try {
+            Authentication authentication =
+                    authenticationManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(
+                                    loginRequest.getEmail(),
+                                    loginRequest.getPassword()
+                            )
+                    );
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authentication);
+            org.springframework.security.core.userdetails.User user =
+                    (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+            return getLoginResponse(user.getUsername());
+        }
+        catch(Exception exception) {
+            return new LoginResponse();
+        }
     }
 
     public LoginResponse getLoginResponse(String email) {
@@ -160,7 +168,8 @@ public class AuthCheckService {
         userLoginResponse.setPhoto(currentUser.getPhoto());
         userLoginResponse.setName(currentUser.getName());
         userLoginResponse.setModerationCount(
-                currentUser.getIsModerator() == 1 ? postRepository.findByModerationPost().get() : 0);
+                currentUser.getIsModerator() == 1 ?
+                        postRepository.findNewPost().size() : 0);
 
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setResult(true);

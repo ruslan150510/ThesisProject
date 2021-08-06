@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class UserRegistrationResponse {
+public class ImageUploadResponse {
     private boolean result;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private ErrorsRegistrationResponse errors;
+    private ErrorsImageUpload errors;
 }

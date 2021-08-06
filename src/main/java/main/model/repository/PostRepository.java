@@ -64,8 +64,8 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
     @Query("update Post p Set p.viewCount = p.viewCount + 1 where p.id = :id")
     void iterableViewCount(@Param("id") int id);
 
-    @Query("select count(p) from Post p where moderation_status in ('NEW')")
-    Optional<Integer> findByModerationPost();
+//    @Query("select p from Post p where moderation_status in ('NEW')")
+//    List<Post> findByModerationPost();
 
     @Query("select p from Post p where user_id = :user_id and is_active = 0")
     List<Post> findMyInactivePost(@Param("user_id") int userId);
@@ -81,4 +81,15 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
     @Query("select p from Post p where user_id = :user_id and is_active = 1 " +
             "and moderation_status = 'ACCEPTED'")
     List<Post> findMyPublishedPost(@Param("user_id") int userId);
+
+    @Query("select p from Post p where is_active = 1 and moderation_status = 'NEW'")
+    List<Post> findNewPost();
+
+    @Query("select p from Post p where moderator_id = :moderator_id and is_active = 1 " +
+            "and moderation_status = 'DECLINED'")
+    List<Post> findModerationDeclinedPost(@Param("moderator_id") int moderatorId);
+
+    @Query("select p from Post p where moderator_id = :moderator_id and is_active = 1 " +
+            "and moderation_status = 'ACCEPTED'")
+    List<Post> findModerationPublishedPost(@Param("moderator_id") int moderatorId);
 }

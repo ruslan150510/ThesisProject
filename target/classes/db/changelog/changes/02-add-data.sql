@@ -43,7 +43,8 @@ GO
 INSERT INTO tags VALUES(1, "tag_1"),
 (2, "New_tag"),
 (3, "tag_2"),
-(4, "tag_3")
+(4, "tag_3"),
+(5, "tag_5")
 GO
 
 INSERT INTO tag2post VALUES(1, 1, 1),
