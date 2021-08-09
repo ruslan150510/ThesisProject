@@ -5,6 +5,7 @@ import com.github.cage.GCage;
 import com.github.cage.IGenerator;
 import com.github.cage.image.Painter;
 import main.api.response.*;
+import main.config.SecurityConfig;
 import main.model.CaptchaCodes;
 import main.model.User;
 import main.model.repository.CaptchaCodesRepository;
@@ -12,12 +13,15 @@ import main.model.repository.PostRepository;
 import main.model.repository.UserRepository;
 import main.request.LoginRequest;
 import main.request.UserRequest;
+import main.security.SecurityUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -113,7 +117,7 @@ public class AuthCheckService {
             User user = new User();
             user.setEmail(userRequest.getEmail());
             user.setName(userRequest.getUserName());
-            user.setPassword(userRequest.getPassword());
+            user.setPassword(passwordEncoder().encode(userRequest.getPassword()));
             user.setCode(userRequest.getCaptcha());
             user.setIsModerator((byte) 0);
             user.setRegTime(time.atOffset(ZoneOffset.UTC).toLocalDateTime());
@@ -184,5 +188,9 @@ public class AuthCheckService {
         LogoutResponse logoutResponse = new LogoutResponse();
         logoutResponse.setResult(true);
         return logoutResponse;
+    }
+
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder(12);
     }
 }

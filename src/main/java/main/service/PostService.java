@@ -38,7 +38,7 @@ public class PostService {
     private final static Integer MIN_TEXT_LENGTH = 50;
     private static final Integer ID_DEFAULT = -1;
     private final static String TEXT_COMMENT_ERROR = "Текст комментария не задан или слишком короткий";
-
+    private final static String ID_COMMENT_ERROR = "комментарий и/или пост не существуют";
 
     @Autowired
     private PostRepository postRepository;
@@ -274,27 +274,29 @@ public class PostService {
         return newPostResponse;
     }
 
-    public NewPostResponse addComment(Principal principal, CommentRequest commentRequest)
-    {
+    public NewPostResponse addComment(Principal principal, CommentRequest commentRequest) {
         NewPostResponse newPostResponse = new NewPostResponse();
-        if (commentRequest.getText().length() >= MIN_TEXT_LENGTH) {
-            PostComments comments = new PostComments();
-            User user = userRepository.findByEmail(principal.getName()).orElseThrow(
-                    () -> new UsernameNotFoundException(principal.getName()));
-            if (commentRequest.getParentId().toString().length() > 0) {
-                comments.setParentId(commentRequest.getParentId());
+        long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+            if (commentRequest.getText().length() >= MIN_TEXT_LENGTH) {
+                PostComments comments = new PostComments();
+                User user = userRepository.findByEmail(principal.getName()).orElseThrow(
+                        () -> new UsernameNotFoundException(principal.getName()));
+                if (commentRequest.getParentId() != null) {
+                    comments.setParentId(commentRequest.getParentId());
+                }
+                comments.setText(commentRequest.getText());
+                comments.setPost(postRepository.findById(commentRequest.getPostId()).get());
+                comments.setUser(user);
+                comments.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
+
+                newPostResponse.setId(commentsRepository.save(comments).getId());
+                newPostResponse.setResult(true);
+            } else {
+                ErrorsPostResponse errorsPostResponse = new ErrorsPostResponse();
+                errorsPostResponse.setText(TEXT_COMMENT_ERROR);
+                newPostResponse.setResult(false);
+                newPostResponse.setErrors(errorsPostResponse);
             }
-            comments.setText(commentRequest.getText());
-            comments.setPost(postRepository.findById(commentRequest.getPostId()).get());
-            newPostResponse.setId(commentsRepository.save(comments).getId());
-        }
-        else
-        {
-            ErrorsPostResponse errorsPostResponse = new ErrorsPostResponse();
-            errorsPostResponse.setText(TEXT_COMMENT_ERROR);
-            newPostResponse.setResult(false);
-            newPostResponse.setErrors(errorsPostResponse);
-        }
         return newPostResponse;
     }
 }

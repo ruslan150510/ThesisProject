@@ -126,8 +126,8 @@ public class ApiPostController {
     @PostMapping("/comment")//требуется авторизация
     public ResponseEntity<NewPostResponse> addCommentPost(Principal principal,
                                                           @RequestBody CommentRequest commentRequest){
-        return new ResponseEntity<>(postService.addComment(principal, commentRequest),
-                !postService.addComment(principal, commentRequest).isResult()
+        NewPostResponse newPostResponse = postService.addComment(principal, commentRequest);
+        return new ResponseEntity<>(newPostResponse, newPostResponse.getId() == null
                         ? HttpStatus.BAD_REQUEST : HttpStatus.OK);
     }
 }

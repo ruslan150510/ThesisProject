@@ -15,4 +15,7 @@ public class NewPostResponse {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer id;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String message;
 }
