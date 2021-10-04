@@ -5,6 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class LogoutResponse {
+public class Response {
     private Boolean result;
 }

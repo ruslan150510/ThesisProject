@@ -3,6 +3,8 @@ package main.controller;
 import main.api.response.*;
 import main.model.ModerationStatus;
 import main.request.CommentRequest;
+import main.request.LikeRequest;
+import main.request.ModerationRequest;
 import main.request.NewPostRequest;
 import main.service.CalendarService;
 import main.service.PostService;
@@ -22,6 +24,8 @@ public class ApiPostController {
     private final CalendarService calendarService;
     private static final String DATE_TIME = "0001-01-01";
     private static final Integer ID_DEFAULT = -1;
+    private static final byte LIKE = 1;
+    private static final byte DISLIKE = -1;
     private String requestText = "";
     private String tagFromPost = "";
 
@@ -129,5 +133,23 @@ public class ApiPostController {
         NewPostResponse newPostResponse = postService.addComment(principal, commentRequest);
         return new ResponseEntity<>(newPostResponse, newPostResponse.getId() == null
                         ? HttpStatus.BAD_REQUEST : HttpStatus.OK);
+    }
+
+    @PostMapping("/moderation")//требуется модератор
+    public ResponseEntity<Response> moderationPost(Principal principal,
+                                                   @RequestBody ModerationRequest moderationRequest){
+        return ResponseEntity.ok(postService.moderationPost(principal, moderationRequest));
+    }
+
+    @PostMapping("/post/like")//требуется авторизация
+    public ResponseEntity<Response> likePost(Principal principal, @RequestBody LikeRequest likeRequest)
+    {
+        return ResponseEntity.ok(postService.likePost(principal, likeRequest, LIKE));
+    }
+
+    @PostMapping("/post/dislike")//требуется авторизация
+    public ResponseEntity<Response> dislikePost(Principal principal, @RequestBody LikeRequest likeRequest)
+    {
+        return ResponseEntity.ok(postService.likePost(principal, likeRequest, DISLIKE));
     }
 }

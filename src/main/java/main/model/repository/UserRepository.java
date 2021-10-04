@@ -15,9 +15,13 @@ public interface UserRepository extends CrudRepository<User, Integer> {
             nativeQuery = true)
     Integer findByLastId();
 
-//    @Query(value = "select count(id) from Users u where email = :email",
-//    nativeQuery = true)
-//    Integer findByEmail(@Param("email") String email);
+    @Query(value = "select u from User u where u.email = :email and u.id != :id")
+    Optional<User> findByEmailExcludId(@Param("email") String email, @Param("id") Integer id);
 
     Optional<User> findByEmail(String email);
+
+//    @Query("select u from User u where u.code = :code")
+    Optional<User> findByCode(@Param("code") String code);
+
+
 }

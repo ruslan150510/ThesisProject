@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ImageUploadResponse {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private boolean result;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

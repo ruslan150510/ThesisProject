@@ -1,6 +1,7 @@
 package main.api.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,21 +16,9 @@ public class ErrorsRegistrationResponse {
 
     public String password;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String captcha;
-//
-//    public static String getEMAIL() {
-//        return EMAIL;
-//    }
-//
-//    public static String getNAME() {
-//        return NAME;
-//    }
-//
-//    public static String getPASSWORD() {
-//        return PASSWORD;
-//    }
-//
-//    public static String getCAPTCHA() {
-//        return CAPTCHA;
-//    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String photo;
 }

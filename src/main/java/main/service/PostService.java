@@ -7,11 +7,10 @@ import main.dto.PostDto;
 import main.dto.UserDto;
 import main.dto.UserIdDto;
 import main.model.*;
-import main.model.repository.PostCommentsRepository;
-import main.model.repository.PostRepository;
-import main.model.repository.TagRepository;
-import main.model.repository.UserRepository;
+import main.model.repository.*;
 import main.request.CommentRequest;
+import main.request.LikeRequest;
+import main.request.ModerationRequest;
 import main.request.NewPostRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +38,7 @@ public class PostService {
     private static final Integer ID_DEFAULT = -1;
     private final static String TEXT_COMMENT_ERROR = "Текст комментария не задан или слишком короткий";
     private final static String ID_COMMENT_ERROR = "комментарий и/или пост не существуют";
+    private static final byte LIKE = 1;
 
     @Autowired
     private PostRepository postRepository;
@@ -54,6 +54,9 @@ public class PostService {
 
     @Autowired
     private PostCommentsRepository commentsRepository;
+
+    @Autowired
+    private PostVotesRepository postVotesRepository;
 
     public OutputPostResponse getPosts(int offset, int limit, Mode mode, String query,
                                        String dateTime, String tag) {
@@ -277,26 +280,69 @@ public class PostService {
     public NewPostResponse addComment(Principal principal, CommentRequest commentRequest) {
         NewPostResponse newPostResponse = new NewPostResponse();
         long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
-            if (commentRequest.getText().length() >= MIN_TEXT_LENGTH) {
-                PostComments comments = new PostComments();
-                User user = userRepository.findByEmail(principal.getName()).orElseThrow(
-                        () -> new UsernameNotFoundException(principal.getName()));
-                if (commentRequest.getParentId() != null) {
-                    comments.setParentId(commentRequest.getParentId());
-                }
-                comments.setText(commentRequest.getText());
-                comments.setPost(postRepository.findById(commentRequest.getPostId()).get());
-                comments.setUser(user);
-                comments.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
-
-                newPostResponse.setId(commentsRepository.save(comments).getId());
-                newPostResponse.setResult(true);
-            } else {
-                ErrorsPostResponse errorsPostResponse = new ErrorsPostResponse();
-                errorsPostResponse.setText(TEXT_COMMENT_ERROR);
-                newPostResponse.setResult(false);
-                newPostResponse.setErrors(errorsPostResponse);
+        if (commentRequest.getText().length() >= MIN_TEXT_LENGTH) {
+            PostComments comments = new PostComments();
+            User user = userRepository.findByEmail(principal.getName()).orElseThrow(
+                    () -> new UsernameNotFoundException(principal.getName()));
+            if (commentRequest.getParentId() != null) {
+                comments.setParentId(commentRequest.getParentId());
             }
+            comments.setText(commentRequest.getText());
+            comments.setPost(postRepository.findById(commentRequest.getPostId()).get());
+            comments.setUser(user);
+            comments.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
+
+            newPostResponse.setId(commentsRepository.save(comments).getId());
+            newPostResponse.setResult(true);
+        } else {
+            ErrorsPostResponse errorsPostResponse = new ErrorsPostResponse();
+            errorsPostResponse.setText(TEXT_COMMENT_ERROR);
+            newPostResponse.setResult(false);
+            newPostResponse.setErrors(errorsPostResponse);
+        }
         return newPostResponse;
     }
+
+    public Response moderationPost(Principal principal, ModerationRequest moderationRequest) {
+        Response response = new Response();
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow(
+                () -> new UsernameNotFoundException(principal.getName()));
+        if (user.getIsModerator().equals(1)) {
+            Post post = postRepository.findById(moderationRequest.getPostId()).get();
+            post.setModeratorId(user.getId());
+            post.setModerationStatus(moderationRequest.getDecision().equals(Decision.decline)
+                    ? Status.DECLINED : Status.ACCEPTED);
+            postRepository.save(post);
+            response.setResult(true);
+        }
+        return response;
+    }
+
+    public Response likePost(Principal principal, LikeRequest likeRequest, Byte like) {
+        Response response = new Response();
+        try {
+            User user = userRepository.findByEmail(principal.getName()).orElseThrow(
+                    () -> new UsernameNotFoundException(principal.getName()));
+            Optional<PostVotes> postVotes = postVotesRepository.
+                    findByUserIdAndPostId(user.getId(), likeRequest.getPostId());
+            if (!postVotes.isPresent()) {
+                postVotes.get().setValue(like);
+                postVotesRepository.save(postVotes.get());
+                response.setResult(true);
+            } else {
+                if ((postVotes.get().getValue() != LIKE) && (like == LIKE)) {
+                    postVotes.get().setValue(like);
+                    postVotesRepository.save(postVotes.get());
+                    response.setResult(true);
+                } else {
+                    response.setResult(false);
+                }
+            }
+        } catch (Exception e) {
+            response.setResult(false);
+        }
+        return response;
+    }
+
+
 }

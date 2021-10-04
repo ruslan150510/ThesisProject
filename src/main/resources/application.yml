@@ -9,7 +9,15 @@ spring:
     show-sql: true
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
+  mail:
+    username: fo4test@yandex.ru
+    password: p@$$w0rd
+    host: smtp.yandex.ru
+    port: 465
+    protocol: smtps
 
+mail:
+  debug: true
 
 blog:
   title: DevPub

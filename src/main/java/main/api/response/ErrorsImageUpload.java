@@ -5,8 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class ErrorsImageUpload {
     private String image;
+
+    public ErrorsImageUpload() {
+        this.image = "Размер файла превышает допустимый размер";
+    }
 }

@@ -92,4 +92,11 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
     @Query("select p from Post p where moderator_id = :moderator_id and is_active = 1 " +
             "and moderation_status = 'ACCEPTED'")
     List<Post> findModerationPublishedPost(@Param("moderator_id") int moderatorId);
+
+    @Query("select min(p.time) from Post p where is_active = 1 and moderation_status = 'ACCEPTED' " +
+            "and p.id = :id")
+    Optional<Post> findFirstPublicationById(@Param("id") int id);
+
+    @Query("select min(p.time) from Post p where is_active = 1 and moderation_status = 'ACCEPTED'")
+    Optional<Post> findFirstPublication();
 }
