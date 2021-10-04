@@ -9,6 +9,7 @@ import main.service.AuthCheckService;
 import main.service.SettingsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,6 +59,7 @@ public class ApiAuthController {
     }
 
     @PostMapping(value = "/image", consumes = "multipart/form-data") //требуется авторизация
+    @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<?> uploadImage(Principal principal,
                                          @RequestParam(value = "photo") MultipartFile multipartFile)
@@ -73,6 +75,7 @@ public class ApiAuthController {
     }
 
     @PostMapping(value = "/profile/my", consumes = "multipart/form-data") //требуется авторизация
+    @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<UserRegistrationResponse> changeProfile
             (Principal principal,

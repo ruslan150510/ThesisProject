@@ -37,7 +37,6 @@ public class ApiPostController {
     }
 
     @GetMapping("/post")
-//    @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getOutputPostResponse(@RequestParam(defaultValue = "0") Integer offset,
                                                                     @RequestParam(defaultValue = "10") Integer limit,
@@ -52,7 +51,6 @@ public class ApiPostController {
     }
 
     @GetMapping("/post/search")
-//    @PreAuthorize("hasAuthority('user:moderate')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getOutputPostSearchResponse
             (@RequestParam(defaultValue = "0") Integer offset,
@@ -94,6 +92,7 @@ public class ApiPostController {
     }
 
     @GetMapping("/post/my")//требуется авторизация
+    @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getMyPosts(Principal principal,
                @RequestParam(defaultValue = "0") Integer offset,
@@ -103,6 +102,7 @@ public class ApiPostController {
     }
 
     @GetMapping("/post/moderation")//требуется авторизация + модератор
+    @PreAuthorize("hasAuthority('user:moderate')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getModerationPosts(Principal principal,
                                                          @RequestParam(defaultValue = "0") Integer offset,
@@ -112,15 +112,15 @@ public class ApiPostController {
     }
 
     @PostMapping("/post")//требуется авторизация
+    @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<NewPostResponse> createNewPost(Principal principal,
                                                          @RequestBody NewPostRequest newPostRequest){
         return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest, ID_DEFAULT));
     }
 
-
-
     @PutMapping("/post/{id}")//требуется авторизация + авторизация + модератор
+    @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<NewPostResponse> putPost(Principal principal,
                                                 @RequestBody NewPostRequest newPostRequest,
                                                 @PathVariable int id) {
@@ -128,6 +128,7 @@ public class ApiPostController {
     }
 
     @PostMapping("/comment")//требуется авторизация
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<NewPostResponse> addCommentPost(Principal principal,
                                                           @RequestBody CommentRequest commentRequest){
         NewPostResponse newPostResponse = postService.addComment(principal, commentRequest);
@@ -136,18 +137,21 @@ public class ApiPostController {
     }
 
     @PostMapping("/moderation")//требуется модератор
+    @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<Response> moderationPost(Principal principal,
                                                    @RequestBody ModerationRequest moderationRequest){
         return ResponseEntity.ok(postService.moderationPost(principal, moderationRequest));
     }
 
     @PostMapping("/post/like")//требуется авторизация
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Response> likePost(Principal principal, @RequestBody LikeRequest likeRequest)
     {
         return ResponseEntity.ok(postService.likePost(principal, likeRequest, LIKE));
     }
 
     @PostMapping("/post/dislike")//требуется авторизация
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Response> dislikePost(Principal principal, @RequestBody LikeRequest likeRequest)
     {
         return ResponseEntity.ok(postService.likePost(principal, likeRequest, DISLIKE));
