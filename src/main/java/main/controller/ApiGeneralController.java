@@ -32,18 +32,18 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/init")
-    private InitResponse init() {
+    public InitResponse init() {
         return initResponse;
     }
 
     @GetMapping("/settings")
-    private SettingsResponse settings() {
+    public SettingsResponse settings() {
         return settingsService.getGlobalSettings();
     }
 
     @GetMapping("/statistics/my")//требуется авторизация
     @PreAuthorize("hasAuthority('user:write')")
-    private ResponseEntity<StatisticsResponse> myStatisticsResponse(Principal principal) {
+    public ResponseEntity<StatisticsResponse> myStatisticsResponse(Principal principal) {
         StatisticsResponse statisticsResponse = settingsService.getMyStatistics(principal);
         if (statisticsResponse == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -53,7 +53,7 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/statistics/all")
-    private ResponseEntity<StatisticsResponse> allStatisticsResponse(Principal principal) {
+    public ResponseEntity<StatisticsResponse> allStatisticsResponse(Principal principal) {
         if (!settings().isStatisticIsPublic()) {
             try {
                 User user = userRepository.findByEmail(principal.getName()).orElseThrow(

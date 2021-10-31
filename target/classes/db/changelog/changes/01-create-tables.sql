@@ -8,7 +8,7 @@ Create Table `users` (
 `code` VARCHAR(255),
 `photo` TEXT,
 PRIMARY KEY(id))
-ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 Create Table `posts` (
@@ -22,7 +22,7 @@ Create Table `posts` (
 `text` TEXT NOT NULL,
 `view_count` INT NOT NULL,
 PRIMARY KEY(id))
-ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 Create Table `post_votes` (
@@ -32,14 +32,14 @@ Create Table `post_votes` (
 `time` DATETIME NOT NULL,
 `value` TINYINT NOT NULL,
 PRIMARY KEY(id))
-ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 Create Table `tags` (
 `id` INT NOT NULL AUTO_INCREMENT,
 `name` VARCHAR(255) NOT NULL,
 PRIMARY KEY(id))
-ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 Create Table `tag2post` (
@@ -47,7 +47,7 @@ Create Table `tag2post` (
 `post_id` INT NOT NULL,
 `tag_id` INT NOT NULL,
 PRIMARY KEY(id))
-ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 Create Table `post_comments` (
@@ -58,7 +58,7 @@ Create Table `post_comments` (
 `time` DATETIME NOT NULL,
 `text` TEXT NOT NULL,
 PRIMARY KEY(id))
-ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 Create Table `captcha_codes` (
@@ -67,7 +67,7 @@ Create Table `captcha_codes` (
 `code` TINYTEXT NOT NULL,
 `secret_code` TINYTEXT NOT NULL,
 PRIMARY KEY(id))
-ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 Create Table `global_settings` (
@@ -76,7 +76,7 @@ Create Table `global_settings` (
 `name` VARCHAR(255) NOT NULL,
 `value` VARCHAR(255) NOT NULL,
 PRIMARY KEY(id))
-ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 GO
 
 INSERT INTO `global_settings` (code, name, value) VALUES

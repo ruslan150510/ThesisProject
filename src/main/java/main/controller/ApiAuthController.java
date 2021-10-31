@@ -28,18 +28,18 @@ public class ApiAuthController {
     }
 
     @GetMapping("/auth/check")
-    private ResponseEntity<LoginResponse> authCheck(Principal principal) {
+    public ResponseEntity<LoginResponse> authCheck(Principal principal) {
         return ResponseEntity.ok(authCheckService.getStatus(principal));
     }
 
     @GetMapping("/auth/captcha")
-    private CaptchaResponse captchaGenerate() throws IOException {
+    public CaptchaResponse captchaGenerate() throws IOException {
         return authCheckService.getSecretCode();
     }
 
     @PostMapping("/auth/register")
     @ResponseBody
-    private ResponseEntity<UserRegistrationResponse> userRegistration(@RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserRegistrationResponse> userRegistration(@RequestBody UserRequest userRequest) {
         if (settingsService.getGlobalSettings().isMultiuserMode()) {
             return ResponseEntity.ok(authCheckService.userRegistrationResponse(userRequest));
         } else {
