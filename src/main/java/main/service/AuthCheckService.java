@@ -109,8 +109,8 @@ public class AuthCheckService {
         IGenerator<String> tokenGenerator = oldCage.getTokenGenerator();
         Cage cage = new Cage(painter, fonts, foregrounds, format, compressRatio, tokenGenerator, rnd);
 
-        String secret = cage.getTokenGenerator().next().substring(0,
-                cage.getTokenGenerator().next().length() - 4);
+        String secret = cage.getTokenGenerator().next();
+//        .substring(0, cage.getTokenGenerator().next().length() - 4);
         byte[] readString = cage.draw(secret);
         String imageEncoding = Base64.getEncoder().encodeToString(readString);
 
