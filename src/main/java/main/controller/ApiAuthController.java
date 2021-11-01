@@ -33,8 +33,8 @@ public class ApiAuthController {
     }
 
     @GetMapping("/auth/captcha")
-    public CaptchaResponse captchaGenerate() throws IOException {
-        return authCheckService.getSecretCode();
+    public ResponseEntity<CaptchaResponse> captchaGenerate() throws IOException {
+        return ResponseEntity.ok(authCheckService.getSecretCode());
     }
 
     @PostMapping("/auth/register")
