@@ -93,6 +93,9 @@ public class AuthCheckService {
     }
 
     public CaptchaResponse getSecretCode() throws IOException {
+        CaptchaCodes captchaCodes = new CaptchaCodes();
+        CaptchaResponse captchaResponse = new CaptchaResponse();
+
         LocalDateTime time = ZonedDateTime.now().toLocalDateTime();
         captchaCodesRepository.deleteByOldRecord(time.minusHours(1)
                 .atOffset(ZoneOffset.UTC).toLocalDateTime());
@@ -114,13 +117,11 @@ public class AuthCheckService {
         byte[] readString = cage.draw(secret);
         String imageEncoding = Base64.getEncoder().encodeToString(readString);
 
-        CaptchaCodes captchaCodes = new CaptchaCodes();
         captchaCodes.setTime(time.atOffset(ZoneOffset.UTC).toLocalDateTime());
         captchaCodes.setCode(secret);
         captchaCodes.setSecretCode(secret);
         captchaCodesRepository.save(captchaCodes);
 
-        CaptchaResponse captchaResponse = new CaptchaResponse();
         captchaResponse.setSecret(secret);
         captchaResponse.setImage(IMAGE_START_STRING + imageEncoding);
         return captchaResponse;
