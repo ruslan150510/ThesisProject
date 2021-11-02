@@ -55,7 +55,7 @@ public class AuthCheckService {
             "<a href=\"/auth/restore\">Запросить ссылку снова</a>";
 
     private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\resources";
-    private static final String PATH_TO_SAVE_IMAGE = "/upload";
+    private static final String PATH_TO_SAVE_IMAGE = "\\upload";
 
     private static final Integer PASSWORD_LENGTH = 6;
     private static final long IMAGE_MAX_SIZE = 5 * 1024 * 1024;
@@ -282,16 +282,16 @@ public class AuthCheckService {
                 multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
         String randomNameFolder = UUID.randomUUID().toString();
         String fullPath = DONT_ADD_PATH_TO_SAVE_IMAGE +
-                PATH_TO_SAVE_IMAGE + "/" +
+                PATH_TO_SAVE_IMAGE + "\\" +
                 randomNameFolder.substring(0, 2);
         Files.createDirectory(Paths.get(fullPath));
-        fullPath = fullPath + "/" + randomNameFolder.substring(2, 4);
+        fullPath = fullPath + "\\" + randomNameFolder.substring(2, 4);
         Files.createDirectory(Paths.get(fullPath));
-        fullPath = fullPath + "/" + randomNameFolder.substring(4, 6);
+        fullPath = fullPath + "\\" + randomNameFolder.substring(4, 6);
         Files.createDirectory(Paths.get(fullPath));
         String fileName = randomNameFolder.substring(6);
         fullPath = fullPath +
-                "/" + fileName + "." + formatName;
+                "\\" + fileName + "." + formatName;
         Path filePath = Paths.get(fullPath);
         if (changePhoto) {
             try (OutputStream os = Files.newOutputStream(filePath)) {
