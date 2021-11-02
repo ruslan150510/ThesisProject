@@ -20,7 +20,7 @@ public interface CaptchaCodesRepository extends CrudRepository<CaptchaCodes, Int
 
     @Modifying
     @Transactional
-    @Query(value = "delete from captcha_codes p where p.time < :time",
+    @Query(value = "delete p from captcha_codes p where p.time < :time",
             nativeQuery = true)
     void deleteByOldRecord(@Param("time") LocalDateTime time);
 
