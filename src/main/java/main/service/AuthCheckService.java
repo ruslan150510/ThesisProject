@@ -116,12 +116,12 @@ public class AuthCheckService {
 //        .substring(0, cage.getTokenGenerator().next().length() - 4);
         byte[] readString = cage.draw(secret);
         String imageEncoding = Base64.getEncoder().encodeToString(readString);
-
+        System.out.println("generation cage");
         captchaCodes.setTime(time.atOffset(ZoneOffset.UTC).toLocalDateTime());
         captchaCodes.setCode(secret);
         captchaCodes.setSecretCode(secret);
         captchaCodesRepository.save(captchaCodes);
-
+        System.out.println("save cage");
         captchaResponse.setSecret(secret);
         captchaResponse.setImage(IMAGE_START_STRING + imageEncoding);
         return captchaResponse;
