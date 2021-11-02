@@ -97,8 +97,8 @@ public class AuthCheckService {
         CaptchaResponse captchaResponse = new CaptchaResponse();
 
         LocalDateTime time = ZonedDateTime.now().toLocalDateTime();
-//        captchaCodesRepository.deleteByOldRecord(time.minusHours(1)
-//                .atOffset(ZoneOffset.UTC).toLocalDateTime());
+        captchaCodesRepository.deleteByOldRecord(time.minusHours(1)
+                .atOffset(ZoneOffset.UTC).toLocalDateTime());
 
         Cage oldCage = new GCage();
         Random rnd = new Random();
