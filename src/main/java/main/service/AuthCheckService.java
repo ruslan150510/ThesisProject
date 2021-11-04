@@ -4,6 +4,7 @@ import com.github.cage.Cage;
 import com.github.cage.GCage;
 import com.github.cage.IGenerator;
 import com.github.cage.image.Painter;
+import liquibase.pro.packaged.J;
 import main.api.response.*;
 import main.model.CaptchaCodes;
 import main.model.User;
@@ -38,9 +39,7 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Base64;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class AuthCheckService {
@@ -253,7 +252,7 @@ public class AuthCheckService {
                     Files.deleteIfExists(Path.of(user.getPhoto()));
                     user.setPhoto("");
                 } else {
-                    user.setPhoto(extracted(multipartFile, user.getPhoto(), changePhoto, PATH_TO_SAVE_AVATAR));
+                    user.setPhoto(extracted(multipartFile, user.getPhoto(), changePhoto, PATH_TO_SAVE_IMAGE));
                 }
             }
             userRepository.save(user);
@@ -297,7 +296,7 @@ public class AuthCheckService {
                     "\\" + fileName + "." + formatName;
         Path filePath = Paths.get(fullPath);
 
-        if (savePath.equals(PATH_TO_SAVE_AVATAR))
+        if (savePath.equals(PATH_TO_SAVE_IMAGE))
         {
             BufferedImage image = ImageIO.read(multipartFile.getInputStream());
             BufferedImage newImage = Scalr.resize(image,
@@ -324,9 +323,10 @@ public class AuthCheckService {
         boolean changePhoto = false;
         String imageFormat = multipartFile.getOriginalFilename().substring(
                 multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
-        if ((multipartFile.getSize() < IMAGE_MAX_SIZE) &&
-                ((ImageFormat.jpg.equals(imageFormat)) ||
-                        (ImageFormat.png.equals(imageFormat)))) {
+        int getImageSize = (int) multipartFile.getSize();
+        if ((getImageSize < IMAGE_MAX_SIZE) &&
+                ((imageFormat.toLowerCase().indexOf(ImageFormat.jpg.toString())>-1)||
+                        (imageFormat.toLowerCase().indexOf(ImageFormat.png.toString())>-1))){
             return extracted(multipartFile, "", changePhoto, PATH_TO_SAVE_IMAGE);
         } else {
             return "";

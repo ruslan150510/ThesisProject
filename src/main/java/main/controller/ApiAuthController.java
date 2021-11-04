@@ -62,7 +62,7 @@ public class ApiAuthController {
     @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<?> uploadImage(Principal principal,
-                                         @RequestParam(value = "photo") MultipartFile multipartFile)
+                                         @RequestParam(value = "image") MultipartFile multipartFile)
             throws IOException {
         String path = authCheckService.uploadResponse(principal, multipartFile);
         if (path.equals("")) {
