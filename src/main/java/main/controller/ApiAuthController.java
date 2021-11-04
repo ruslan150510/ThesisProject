@@ -92,23 +92,23 @@ public class ApiAuthController {
                 password));
     }
 
-    @PostMapping(value = "/profile/my", consumes = "application/json") //требуется авторизация
-    @PreAuthorize("hasAuthority('user:write')")
-    @ResponseBody
-    public ResponseEntity<UserRegistrationResponse> changeProfileWithoutImage
-            (Principal principal,
-             @RequestParam(value = "email") String email,
-             @RequestParam(value = "removePhoto") int removePhoto,
-             @RequestParam(value = "photo") MultipartFile multipartFile,
-             @RequestParam(value = "name") String name,
-             @RequestParam(value = "password", required = false) String password) throws IOException {
-        return ResponseEntity.ok(authCheckService.changeProfile(principal,
-                email,
-                removePhoto,
-                multipartFile,
-                name,
-                password));
-    }
+//    @PostMapping(value = "/profile/my", consumes = "application/json") //требуется авторизация
+//    @PreAuthorize("hasAuthority('user:write')")
+//    @ResponseBody
+//    public ResponseEntity<UserRegistrationResponse> changeProfileWithoutImage
+//            (Principal principal,
+//             @RequestParam(value = "email") String email,
+//             @RequestParam(value = "removePhoto") int removePhoto,
+//             @RequestParam(value = "photo") MultipartFile multipartFile,
+//             @RequestParam(value = "name") String name,
+//             @RequestParam(value = "password", required = false) String password) throws IOException {
+//        return ResponseEntity.ok(authCheckService.changeProfile(principal,
+//                email,
+//                removePhoto,
+//                multipartFile,
+//                name,
+//                password));
+//    }
 
     @PostMapping("/auth/restore")
     @ResponseBody
