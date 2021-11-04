@@ -53,7 +53,7 @@ public class AuthCheckService {
     private static final String CODE = "Ссылка для восстановления пароля устарела. " +
             "<a href=\"/auth/restore\">Запросить ссылку снова</a>";
 
-    private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\resources\\static";
+    private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\webjars";
     private static final String PATH_TO_SAVE_AVATAR = "\\avatars";
     private static final String PATH_TO_SAVE_IMAGE = "\\upload";
 
@@ -252,7 +252,7 @@ public class AuthCheckService {
                     Files.deleteIfExists(Path.of(user.getPhoto()));
                     user.setPhoto("");
                 } else {
-                    user.setPhoto(extracted(multipartFile, user.getPhoto(), changePhoto, PATH_TO_SAVE_IMAGE));
+                    user.setPhoto(extracted(multipartFile, user.getPhoto(), changePhoto, PATH_TO_SAVE_AVATAR));
                 }
             }
             userRepository.save(user);
@@ -296,7 +296,7 @@ public class AuthCheckService {
                     "\\" + fileName + "." + formatName;
         Path filePath = Paths.get(fullPath);
 
-        if (savePath.equals(PATH_TO_SAVE_IMAGE))
+        if (savePath.equals(PATH_TO_SAVE_AVATAR))
         {
             BufferedImage image = ImageIO.read(multipartFile.getInputStream());
             BufferedImage newImage = Scalr.resize(image,

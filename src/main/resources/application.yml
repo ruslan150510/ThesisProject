@@ -16,9 +16,8 @@ spring:
     host: smtp.yandex.ru
     port: 465
     protocol: smtps
-#  resources:
-#    static-locations: classpath:/static/
-#    , file:src/main/resources/static/files
+  resources:
+    static-locations: classpath:/static/, file:src/main/webjars/
 server:
   port: ${PORT:8080}
 
