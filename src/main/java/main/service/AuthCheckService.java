@@ -53,7 +53,7 @@ public class AuthCheckService {
     private static final String CODE = "Ссылка для восстановления пароля устарела. " +
             "<a href=\"/auth/restore\">Запросить ссылку снова</a>";
 
-    private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\webapp";
+    private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\resources\\files";
     private static final String PATH_TO_SAVE_AVATAR = "\\avatars";
     private static final String PATH_TO_SAVE_IMAGE = "\\upload";
 
