@@ -17,7 +17,7 @@ spring:
     port: 465
     protocol: smtps
   resources:
-    static-locations: classpath:/static/, file:src/main/resources/files
+    static-locations: classpath:/static/, file:src/main/resources/static/files
 server:
   port: ${PORT:8080}
 
