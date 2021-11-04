@@ -4,7 +4,6 @@ import com.github.cage.Cage;
 import com.github.cage.GCage;
 import com.github.cage.IGenerator;
 import com.github.cage.image.Painter;
-import liquibase.pro.packaged.J;
 import main.api.response.*;
 import main.model.CaptchaCodes;
 import main.model.User;
@@ -39,7 +38,9 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Base64;
+import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class AuthCheckService {
