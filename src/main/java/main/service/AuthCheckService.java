@@ -54,11 +54,12 @@ public class AuthCheckService {
     private static final String CODE = "Ссылка для восстановления пароля устарела. " +
             "<a href=\"/auth/restore\">Запросить ссылку снова</a>";
 
-    private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\resources\\static";
+    private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\files";
+    private static final String PATH_TO_SAVE_AVATAR = "\\avatars";
     private static final String PATH_TO_SAVE_IMAGE = "\\upload";
 
     private static final Integer PASSWORD_LENGTH = 6;
-    private static final long IMAGE_MAX_SIZE = 5 * 1024 * 1024;
+    private static final long IMAGE_MAX_SIZE = 5 * 1024 * 1024 * 8;
 
     private static final Integer IMAGE_HEIGHT_AND_WIDTH = 36;
 
@@ -113,7 +114,7 @@ public class AuthCheckService {
         Cage cage = new Cage(painter, fonts, foregrounds, format, compressRatio, tokenGenerator, rnd);
 
         String secret = cage.getTokenGenerator().next()
-        .substring(0, cage.getTokenGenerator().next().length() - 4);
+                .substring(0, cage.getTokenGenerator().next().length() - 4);
         byte[] readString = cage.draw(secret);
         String imageEncoding = Base64.getEncoder().encodeToString(readString);
 
@@ -252,7 +253,7 @@ public class AuthCheckService {
                     Files.deleteIfExists(Path.of(user.getPhoto()));
                     user.setPhoto("");
                 } else {
-                    user.setPhoto(extracted(multipartFile, user.getPhoto(), changePhoto));
+                    user.setPhoto(extracted(multipartFile, user.getPhoto(), changePhoto, PATH_TO_SAVE_AVATAR));
                 }
             }
             userRepository.save(user);
@@ -274,39 +275,46 @@ public class AuthCheckService {
         return userRegistrationResponse;
     }
 
-    private String extracted(MultipartFile multipartFile, String path, boolean changePhoto) throws IOException {
+    private String extracted(MultipartFile multipartFile, String path, boolean changePhoto,
+                             String savePath) throws IOException {
+        String fullPath = DONT_ADD_PATH_TO_SAVE_IMAGE +
+                savePath;
+        path = savePath + path;
         if (path != null) {
             Files.deleteIfExists(Path.of(path));
         }
-        String formatName = multipartFile.getOriginalFilename().substring(
-                multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
-        String randomNameFolder = UUID.randomUUID().toString();
-        String fullPath = DONT_ADD_PATH_TO_SAVE_IMAGE +
-                PATH_TO_SAVE_IMAGE + "\\" +
-                randomNameFolder.substring(0, 2);
-        Files.createDirectory(Paths.get(fullPath));
-        fullPath = fullPath + "\\" + randomNameFolder.substring(2, 4);
-        Files.createDirectory(Paths.get(fullPath));
-        fullPath = fullPath + "\\" + randomNameFolder.substring(4, 6);
-        Files.createDirectory(Paths.get(fullPath));
-        String fileName = randomNameFolder.substring(6);
-        fullPath = fullPath +
-                "\\" + fileName + "." + formatName;
+            String formatName = multipartFile.getOriginalFilename().substring(
+                    multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
+            String randomNameFolder = UUID.randomUUID().toString();
+            fullPath = fullPath + "\\" + randomNameFolder.substring(0, 2);
+            Files.createDirectory(Paths.get(fullPath));
+            fullPath = fullPath + "\\" + randomNameFolder.substring(2, 4);
+            Files.createDirectory(Paths.get(fullPath));
+            fullPath = fullPath + "\\" + randomNameFolder.substring(4, 6);
+            Files.createDirectory(Paths.get(fullPath));
+            String fileName = randomNameFolder.substring(6);
+            fullPath = fullPath +
+                    "\\" + fileName + "." + formatName;
         Path filePath = Paths.get(fullPath);
-        if (changePhoto) {
-            try (OutputStream os = Files.newOutputStream(filePath)) {
-                os.write(multipartFile.getBytes());
-            }
-        } else {
+
+        if (savePath.equals(PATH_TO_SAVE_AVATAR))
+        {
             BufferedImage image = ImageIO.read(multipartFile.getInputStream());
             BufferedImage newImage = Scalr.resize(image,
                     Scalr.Method.AUTOMATIC,
                     IMAGE_HEIGHT_AND_WIDTH,
                     IMAGE_HEIGHT_AND_WIDTH);
-            File file = new File(fileName);
+            File file = new File(filePath.toString());
             ImageIO.write(newImage, formatName, file);
         }
-        return filePath.toString().replace(DONT_ADD_PATH_TO_SAVE_IMAGE, "");
+        else
+        {
+            try (OutputStream os = Files.newOutputStream(filePath)) {
+                os.write(multipartFile.getBytes());
+            }
+        }
+        filePath = Path.of(filePath.toString().replace(DONT_ADD_PATH_TO_SAVE_IMAGE, ""));
+        return filePath.toString();
     }
 
     public String uploadResponse(Principal principal, MultipartFile multipartFile) throws IOException {
@@ -319,7 +327,7 @@ public class AuthCheckService {
         if ((multipartFile.getSize() < IMAGE_MAX_SIZE) &&
                 ((ImageFormat.jpg.equals(imageFormat)) ||
                         (ImageFormat.png.equals(imageFormat)))) {
-            return extracted(multipartFile, "", changePhoto);
+            return extracted(multipartFile, "", changePhoto, PATH_TO_SAVE_IMAGE);
         } else {
             return "";
         }
