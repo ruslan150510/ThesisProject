@@ -15,6 +15,7 @@ import main.request.LoginRequest;
 import main.request.UserRequest;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,6 +45,9 @@ import java.util.UUID;
 
 @Service
 public class AuthCheckService {
+    @Value("${send.localhost}")
+    private String LOCALHOST_RESTORE;
+
     private static final String IMAGE_START_STRING = "data:image/png;base64, ";
 
     private static final String EMAIL = "Этот e-mail уже зарегистрирован";
@@ -342,7 +346,7 @@ public class AuthCheckService {
             user.setCode(code);
             userRepository.save(user);
             mailSender.send(email,
-                    String.format("http://localhost:8080/login/change-password/%s", code));
+                    String.format("http://%s/login/change-password/%s", LOCALHOST_RESTORE, code));
             response.setResult(true);
         } catch (Exception exception) {
             response.setResult(false);

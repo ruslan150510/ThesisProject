@@ -32,3 +32,6 @@ blog:
   email: mail@mail.ru
   copyright: Дмитрий Сергеев
   copyrightFrom: 2005
+
+send:
+  localhost: akbashev-java-skillbox.herokuapp.com
