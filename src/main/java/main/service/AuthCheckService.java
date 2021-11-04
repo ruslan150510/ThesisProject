@@ -55,7 +55,7 @@ public class AuthCheckService {
             "<a href=\"/auth/restore\">Запросить ссылку снова</a>";
 
     private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\webjars";
-    private static final String PATH_TO_SAVE_AVATAR = "\\avatars";
+    private static final Boolean IS_AVATAR = true;
     private static final String PATH_TO_SAVE_IMAGE = "\\upload";
 
     private static final Integer PASSWORD_LENGTH = 6;
@@ -253,7 +253,7 @@ public class AuthCheckService {
                     Files.deleteIfExists(Path.of(user.getPhoto()));
                     user.setPhoto("");
                 } else {
-                    user.setPhoto(extracted(multipartFile, user.getPhoto(), changePhoto, PATH_TO_SAVE_AVATAR));
+                    user.setPhoto(extracted(multipartFile, user.getPhoto(), IS_AVATAR));
                 }
             }
             userRepository.save(user);
@@ -275,11 +275,10 @@ public class AuthCheckService {
         return userRegistrationResponse;
     }
 
-    private String extracted(MultipartFile multipartFile, String path, boolean changePhoto,
-                             String savePath) throws IOException {
+    private String extracted(MultipartFile multipartFile, String path, boolean isAvatar) throws IOException {
         String fullPath = DONT_ADD_PATH_TO_SAVE_IMAGE +
-                savePath;
-        path = savePath + path;
+                PATH_TO_SAVE_IMAGE;
+        path = PATH_TO_SAVE_IMAGE + path;
         if (path != null) {
             Files.deleteIfExists(Path.of(path));
         }
@@ -297,7 +296,7 @@ public class AuthCheckService {
                     "\\" + fileName + "." + formatName;
         Path filePath = Paths.get(fullPath);
 
-        if (savePath.equals(PATH_TO_SAVE_AVATAR))
+        if (isAvatar)
         {
             BufferedImage image = ImageIO.read(multipartFile.getInputStream());
             BufferedImage newImage = Scalr.resize(image,
@@ -328,7 +327,7 @@ public class AuthCheckService {
         if ((getImageSize < IMAGE_MAX_SIZE) &&
                 ((imageFormat.toLowerCase().indexOf(ImageFormat.jpg.toString())>-1)||
                         (imageFormat.toLowerCase().indexOf(ImageFormat.png.toString())>-1))){
-            return extracted(multipartFile, "", changePhoto, PATH_TO_SAVE_IMAGE);
+            return extracted(multipartFile, "", false);
         } else {
             return "";
         }
