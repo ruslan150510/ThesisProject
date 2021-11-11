@@ -36,3 +36,9 @@ blog:
 send:
   localhost: akbashev-java-skillbox.herokuapp.com
 #  localhost: localhost:8080
+
+production:
+  cloud_name: "hmslac4qf"
+  api_key: "773262953886412"
+  api_secret: "qLdez354SSbhbMhALMQ6tOE3MaM"
+  secure: true

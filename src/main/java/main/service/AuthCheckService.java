@@ -1,5 +1,8 @@
 package main.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
+import com.cloudinary.utils.ObjectUtils;
 import com.github.cage.Cage;
 import com.github.cage.GCage;
 import com.github.cage.IGenerator;
@@ -13,7 +16,6 @@ import main.model.repository.UserRepository;
 import main.request.ChangePasswordRequest;
 import main.request.LoginRequest;
 import main.request.UserRequest;
-import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,12 +28,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Base64;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -47,6 +46,15 @@ import java.util.UUID;
 public class AuthCheckService {
     @Value("${send.localhost}")
     private String LOCALHOST_RESTORE;
+
+    @Value("${production.cloud_name}")
+    private String CLOUD_NAME;
+    @Value("${production.api_key}")
+    private String API_KEY;
+    @Value("${production.api_secret}")
+    private String API_SECRET;
+    @Value("${production.secure}")
+    private Boolean SECURE;
 
     private static final String IMAGE_START_STRING = "data:image/png;base64, ";
 
@@ -58,9 +66,7 @@ public class AuthCheckService {
     private static final String CODE = "Ссылка для восстановления пароля устарела. " +
             "<a href=\"/auth/restore\">Запросить ссылку снова</a>";
 
-    private static final String DONT_ADD_PATH_TO_SAVE_IMAGE = "src\\main\\webjars";
     private static final Boolean IS_AVATAR = true;
-    private static final String PATH_TO_SAVE_IMAGE = "\\upload";
 
     private static final Integer PASSWORD_LENGTH = 6;
     private static final long IMAGE_MAX_SIZE = 5 * 1024 * 1024 * 8;
@@ -224,7 +230,7 @@ public class AuthCheckService {
                                                   int removePhoto,
                                                   MultipartFile multipartFile,
                                                   String name,
-                                                  String password) throws IOException {
+                                                  String password) throws Exception {
         UserRegistrationResponse userRegistrationResponse = new UserRegistrationResponse();
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(
                 () -> new UsernameNotFoundException(principal.getName()));
@@ -279,48 +285,47 @@ public class AuthCheckService {
         return userRegistrationResponse;
     }
 
-    private String extracted(MultipartFile multipartFile, String path, boolean isAvatar) throws IOException {
-        String fullPath = DONT_ADD_PATH_TO_SAVE_IMAGE +
-                PATH_TO_SAVE_IMAGE;
-        path = PATH_TO_SAVE_IMAGE + path;
-        if (path != null) {
-            Files.deleteIfExists(Path.of(path));
+    private String extracted(MultipartFile multipartFile, String path, boolean isAvatar) throws Exception {
+        Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", CLOUD_NAME,
+                "api_key", API_KEY,
+                "api_secret", API_SECRET,
+                "secure", SECURE));
+        String fullPath = "";
+//        if (path != null) {
+//            if (isAvatar)
+//            path = path.substring(path.lastIndexOf("/") + 1);
+//            cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
+//            cloudinary.api().deleteAllResources(ObjectUtils.emptyMap());
+//        }
+        String formatName = multipartFile.getOriginalFilename().substring(
+                multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
+        String randomNameFolder = UUID.randomUUID().toString();
+        fullPath = randomNameFolder.substring(0, 2);
+        Files.createDirectory(Paths.get(fullPath));
+        fullPath = fullPath + "/" + randomNameFolder.substring(2, 4);
+        Files.createDirectory(Paths.get(fullPath));
+        fullPath = fullPath + "/" + randomNameFolder.substring(4, 6);
+//        Files.createDirectory(Paths.get(fullPath));
+        String fileName = randomNameFolder.substring(6);
+        Map params = ObjectUtils.asMap("public_id", fullPath);//fileName +"." + formatName);
+        String fileUrl;
+        cloudinary.uploader().upload(multipartFile.getBytes(), params);
+        if (isAvatar) {
+            fileUrl = cloudinary.url().transformation(new Transformation()
+                    .width(IMAGE_HEIGHT_AND_WIDTH).height(IMAGE_HEIGHT_AND_WIDTH)
+                    .crop("fill")).generate(fullPath);
+            path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME + "/image/upload/c_fill,h_36,w_36/v1/", "");
+        } else {
+            fileUrl = cloudinary.url().generate(fullPath);
+            path = path.replaceAll(String.format("https://res.cloudinary.com/%s/image/upload/v1/", CLOUD_NAME), "");
         }
-            String formatName = multipartFile.getOriginalFilename().substring(
-                    multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
-            String randomNameFolder = UUID.randomUUID().toString();
-            fullPath = fullPath + "\\" + randomNameFolder.substring(0, 2);
-            Files.createDirectory(Paths.get(fullPath));
-            fullPath = fullPath + "\\" + randomNameFolder.substring(2, 4);
-            Files.createDirectory(Paths.get(fullPath));
-            fullPath = fullPath + "\\" + randomNameFolder.substring(4, 6);
-            Files.createDirectory(Paths.get(fullPath));
-            String fileName = randomNameFolder.substring(6);
-            fullPath = fullPath +
-                    "\\" + fileName + "." + formatName;
-        Path filePath = Paths.get(fullPath);
-
-        if (isAvatar)
-        {
-            BufferedImage image = ImageIO.read(multipartFile.getInputStream());
-            BufferedImage newImage = Scalr.resize(image,
-                    Scalr.Method.AUTOMATIC,
-                    IMAGE_HEIGHT_AND_WIDTH,
-                    IMAGE_HEIGHT_AND_WIDTH);
-            File file = new File(filePath.toString());
-            ImageIO.write(newImage, formatName, file);
-        }
-        else
-        {
-            try (OutputStream os = Files.newOutputStream(filePath)) {
-                os.write(multipartFile.getBytes());
-            }
-        }
-        filePath = Path.of(filePath.toString().replace(DONT_ADD_PATH_TO_SAVE_IMAGE, ""));
-        return filePath.toString();
+        cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
+        cloudinary.api().deleteAllResources(ObjectUtils.emptyMap());
+        return fileUrl;
     }
 
-    public String uploadResponse(Principal principal, MultipartFile multipartFile) throws IOException {
+    public String uploadResponse(Principal principal, MultipartFile multipartFile) throws Exception {
         ImageUploadResponse imageUploadResponse = new ImageUploadResponse();
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(
                 () -> new UsernameNotFoundException(principal.getName()));
@@ -329,8 +334,8 @@ public class AuthCheckService {
                 multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
         int getImageSize = (int) multipartFile.getSize();
         if ((getImageSize < IMAGE_MAX_SIZE) &&
-                ((imageFormat.toLowerCase().indexOf(ImageFormat.jpg.toString())>-1)||
-                        (imageFormat.toLowerCase().indexOf(ImageFormat.png.toString())>-1))){
+                ((imageFormat.toLowerCase().indexOf(ImageFormat.jpg.toString()) > -1) ||
+                        (imageFormat.toLowerCase().indexOf(ImageFormat.png.toString()) > -1))) {
             return extracted(multipartFile, "", false);
         } else {
             return "";

@@ -63,7 +63,7 @@ public class ApiAuthController {
     @ResponseBody
     public ResponseEntity<?> uploadImage(Principal principal,
                                          @RequestParam(value = "image") MultipartFile multipartFile)
-            throws IOException {
+            throws Exception {
         String path = authCheckService.uploadResponse(principal, multipartFile);
         if (path.equals("")) {
             ImageUploadResponse imageUploadResponse = new ImageUploadResponse();
@@ -83,7 +83,7 @@ public class ApiAuthController {
              @RequestParam(value = "removePhoto") int removePhoto,
              @RequestParam(value = "photo") MultipartFile multipartFile,
              @RequestParam(value = "name") String name,
-             @RequestParam(value = "password", required = false) String password) throws IOException {
+             @RequestParam(value = "password", required = false) String password) throws Exception {
         return ResponseEntity.ok(authCheckService.changeProfile(principal,
                 email,
                 removePhoto,
@@ -101,7 +101,7 @@ public class ApiAuthController {
              @RequestParam(value = "removePhoto") int removePhoto,
              @RequestParam(value = "photo") MultipartFile multipartFile,
              @RequestParam(value = "name") String name,
-             @RequestParam(value = "password", required = false) String password) throws IOException {
+             @RequestParam(value = "password", required = false) String password) throws Exception {
         return ResponseEntity.ok(authCheckService.changeProfile(principal,
                 email,
                 removePhoto,
