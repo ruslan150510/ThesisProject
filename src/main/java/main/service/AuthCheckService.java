@@ -305,7 +305,7 @@ public class AuthCheckService {
         fullPath = fullPath + "/" + randomNameFolder.substring(2, 4);
         fullPath = fullPath + "/" + randomNameFolder.substring(4, 6);
         String fileName = randomNameFolder.substring(6);
-        fullPath = fullPath + "/" + fileName;
+        fullPath = fullPath + "/" + fileName + "." + formatName;
         Map params = ObjectUtils.asMap("public_id", fullPath);
         String fileUrl;
         cloudinary.uploader().upload(multipartFile.getBytes(), params);
