@@ -318,8 +318,8 @@ public class AuthCheckService {
             fileUrl = cloudinary.url().generate(fullPath);
             path = path.replaceAll(String.format("https://res.cloudinary.com/%s/image/upload/v1/", CLOUD_NAME), "");
         }
-        cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
-        cloudinary.api().deleteAllResources(ObjectUtils.emptyMap());
+//        cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
+//        cloudinary.api().deleteAllResources(ObjectUtils.emptyMap());
         return fileUrl;
     }
 
