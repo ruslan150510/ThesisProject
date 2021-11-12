@@ -302,9 +302,9 @@ public class AuthCheckService {
                 multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
         String randomNameFolder = UUID.randomUUID().toString();
         fullPath = randomNameFolder.substring(0, 2);
-        Files.createDirectory(Paths.get(fullPath));
+//        Files.createDirectory(Paths.get(fullPath));
         fullPath = fullPath + "/" + randomNameFolder.substring(2, 4);
-        Files.createDirectory(Paths.get(fullPath));
+//        Files.createDirectory(Paths.get(fullPath));
         fullPath = fullPath + "/" + randomNameFolder.substring(4, 6);
 //        Files.createDirectory(Paths.get(fullPath));
         String fileName = randomNameFolder.substring(6);
