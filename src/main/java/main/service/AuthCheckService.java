@@ -29,7 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,6 +69,7 @@ public class AuthCheckService {
             "<a href=\"/auth/restore\">Запросить ссылку снова</a>";
 
     private static final Boolean IS_AVATAR = true;
+    private static final Boolean ONLY_REMOVE = true;
 
     private static final Integer PASSWORD_LENGTH = 6;
     private static final long IMAGE_MAX_SIZE = 5 * 1024 * 1024 * 8;
@@ -260,10 +263,49 @@ public class AuthCheckService {
             }
             if (changePhoto) {
                 if (removePhoto == 1) {
-                    Files.deleteIfExists(Path.of(user.getPhoto()));
-                    user.setPhoto("");
+                    user.setPhoto(extracted(new MultipartFile() {
+                        @Override
+                        public String getName() {
+                            return null;
+                        }
+
+                        @Override
+                        public String getOriginalFilename() {
+                            return null;
+                        }
+
+                        @Override
+                        public String getContentType() {
+                            return null;
+                        }
+
+                        @Override
+                        public boolean isEmpty() {
+                            return false;
+                        }
+
+                        @Override
+                        public long getSize() {
+                            return 0;
+                        }
+
+                        @Override
+                        public byte[] getBytes() throws IOException {
+                            return new byte[0];
+                        }
+
+                        @Override
+                        public InputStream getInputStream() throws IOException {
+                            return null;
+                        }
+
+                        @Override
+                        public void transferTo(File file) throws IOException, IllegalStateException {
+
+                        }
+                    }, user.getPhoto(), IS_AVATAR, ONLY_REMOVE));
                 } else {
-                    user.setPhoto(extracted(multipartFile, user.getPhoto(), IS_AVATAR));
+                    user.setPhoto(extracted(multipartFile, user.getPhoto(), IS_AVATAR, !ONLY_REMOVE));
                 }
             }
             userRepository.save(user);
@@ -285,42 +327,52 @@ public class AuthCheckService {
         return userRegistrationResponse;
     }
 
-    private String extracted(MultipartFile multipartFile, String path, boolean isAvatar) throws Exception {
+    private String extracted(MultipartFile multipartFile, String path, boolean isAvatar,
+                             boolean onlyRemove) throws Exception {
         Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
                 "cloud_name", CLOUD_NAME,
                 "api_key", API_KEY,
                 "api_secret", API_SECRET,
                 "secure", SECURE));
-        String fullPath = "";
-//        if (path != null) {
-//            if (isAvatar)
-//            path = path.substring(path.lastIndexOf("/") + 1);
-//            cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
-//            cloudinary.api().deleteAllResources(ObjectUtils.emptyMap());
-//        }
-        String formatName = multipartFile.getOriginalFilename().substring(
-                multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
-        String randomNameFolder = UUID.randomUUID().toString();
-        fullPath = randomNameFolder.substring(0, 2);
-        fullPath = fullPath + "/" + randomNameFolder.substring(2, 4);
-        fullPath = fullPath + "/" + randomNameFolder.substring(4, 6);
-        String fileName = randomNameFolder.substring(6);
-        fullPath = fullPath + "/" + fileName + "." + formatName;
-        Map params = ObjectUtils.asMap("public_id", fullPath);
-        String fileUrl;
-        cloudinary.uploader().upload(multipartFile.getBytes(), params);
-        if (isAvatar) {
-            fileUrl = cloudinary.url().transformation(new Transformation()
-                    .width(IMAGE_HEIGHT_AND_WIDTH).height(IMAGE_HEIGHT_AND_WIDTH)
-                    .crop("fill")).generate(fullPath);
-            path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME + "/image/upload/c_fill,h_36,w_36/v1/", "");
-        } else {
-            fileUrl = cloudinary.url().generate(fullPath);
-            path = path.replaceAll(String.format("https://res.cloudinary.com/%s/image/upload/v1/", CLOUD_NAME), "");
+        if (onlyRemove)
+        {
+            if (isAvatar) {
+                path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME +
+                        "/image/upload/c_fill,h_36,w_36/v1/", "");
+            }
+            else
+            {
+                path = path.replaceAll(String.format("https://res.cloudinary.com/%s/image/upload/v1/",
+                        CLOUD_NAME), "");
+            }
+            cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
+            return "";
         }
-//        cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
-//        cloudinary.api().deleteAllResources(ObjectUtils.emptyMap());
-        return fileUrl;
+        else {
+            String fullPath = "";
+            String formatName = multipartFile.getOriginalFilename().substring(
+                    multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
+            String randomNameFolder = UUID.randomUUID().toString();
+            fullPath = randomNameFolder.substring(0, 2);
+            fullPath = fullPath + "/" + randomNameFolder.substring(2, 4);
+            fullPath = fullPath + "/" + randomNameFolder.substring(4, 6);
+            String fileName = randomNameFolder.substring(6);
+            fullPath = fullPath + "/" + fileName;
+            Map params = ObjectUtils.asMap("public_id", fullPath);
+            String fileUrl;
+            cloudinary.uploader().upload(multipartFile.getBytes(), params);
+            if (isAvatar) {
+                fileUrl = cloudinary.url().transformation(new Transformation()
+                        .width(IMAGE_HEIGHT_AND_WIDTH).height(IMAGE_HEIGHT_AND_WIDTH)
+                        .crop("fill")).generate(fullPath + "." + formatName);
+                path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME + "/image/upload/c_fill,h_36,w_36/v1/", "");
+            } else {
+                fileUrl = cloudinary.url().generate(fullPath);
+                path = path.replaceAll(String.format("https://res.cloudinary.com/%s/image/upload/v1/", CLOUD_NAME), "");
+            }
+            cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
+            return fileUrl;
+        }
     }
 
     public String uploadResponse(Principal principal, MultipartFile multipartFile) throws Exception {
@@ -334,7 +386,7 @@ public class AuthCheckService {
         if ((getImageSize < IMAGE_MAX_SIZE) &&
                 ((imageFormat.toLowerCase().indexOf(ImageFormat.jpg.toString()) > -1) ||
                         (imageFormat.toLowerCase().indexOf(ImageFormat.png.toString()) > -1))) {
-            return extracted(multipartFile, "", false);
+            return extracted(multipartFile, "", !IS_AVATAR, !ONLY_REMOVE);
         } else {
             return "";
         }
