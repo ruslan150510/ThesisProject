@@ -14,6 +14,7 @@ import main.model.repository.CaptchaCodesRepository;
 import main.model.repository.PostRepository;
 import main.model.repository.UserRepository;
 import main.request.ChangePasswordRequest;
+import main.request.EditeProfileRequest;
 import main.request.LoginRequest;
 import main.request.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -237,8 +233,8 @@ public class AuthCheckService {
         UserRegistrationResponse userRegistrationResponse = new UserRegistrationResponse();
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(
                 () -> new UsernameNotFoundException(principal.getName()));
-        boolean changePhoto = (!multipartFile.isEmpty() && multipartFile.getSize() < IMAGE_MAX_SIZE)
-                || (removePhoto == 1);
+        boolean changePhoto = !multipartFile.isEmpty() && multipartFile.getSize() < IMAGE_MAX_SIZE;
+
         String imageFormat = changePhoto ? multipartFile.getOriginalFilename()
                 .substring(multipartFile.getOriginalFilename().lastIndexOf(".") + 1) : "";
         if (((password == null)
@@ -287,6 +283,54 @@ public class AuthCheckService {
         return userRegistrationResponse;
     }
 
+    public UserRegistrationResponse changeProfileDeleteImage(Principal principal,
+                                                             EditeProfileRequest editeProfileRequest) {
+        UserRegistrationResponse userRegistrationResponse = new UserRegistrationResponse();
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow(
+                () -> new UsernameNotFoundException(principal.getName()));
+        String name = editeProfileRequest.getName();
+        if ((editeProfileRequest.getPassword() == null)
+                || (editeProfileRequest.getPassword() != null &&
+                editeProfileRequest.getPassword().length() < PASSWORD_LENGTH) &&
+                (user.getEmail().equals(editeProfileRequest.getEmail()) ||
+                        (!user.getEmail().equals(editeProfileRequest.getEmail())
+                                && !userRepository.findByEmailExcludId(editeProfileRequest.getEmail(),
+                                user.getId()).isPresent()))
+                && ((user.getName().equals(name)) ||
+                (!user.getName().equals(name) && name.replaceAll("[0-9]", "")
+                        .replaceAll(" ", "").length() > 0))
+                && (editeProfileRequest.getMultipartFile() == "")) {
+            if (!user.getName().equals(name)) {
+                user.setName(name);
+            }
+            if (!user.getEmail().equals(editeProfileRequest.getEmail())) {
+                user.setEmail(editeProfileRequest.getEmail());
+            }
+            if (editeProfileRequest.getPassword() != null &&
+                    editeProfileRequest.getPassword().length() < PASSWORD_LENGTH) {
+                user.setPassword(passwordEncoder().encode(editeProfileRequest.getPassword()));
+            }
+            if (editeProfileRequest.getRemovePhoto() == 1) {
+                user.setPhoto("");
+            }
+            userRepository.save(user);
+            userRegistrationResponse.setResult(true);
+        } else {
+            ErrorsRegistrationResponse errorsRegistrationResponse = new ErrorsRegistrationResponse();
+            errorsRegistrationResponse.setEmail(!user.getEmail().equals(editeProfileRequest.getEmail())
+                    && userRepository.findByEmailExcludId(editeProfileRequest.getEmail(),
+                    user.getId()).isPresent() ? EMAIL : null);
+            errorsRegistrationResponse.setName(!user.getName().equals(name) &&
+                    name.replaceAll("[0-9]", "")
+                            .replaceAll(" ", "").length() == 0 ? NAME : null);
+            errorsRegistrationResponse.setPassword(editeProfileRequest.getPassword() != null &&
+                    editeProfileRequest.getPassword().length() < PASSWORD_LENGTH ? PASSWORD : null);
+            userRegistrationResponse.setResult(false);
+            userRegistrationResponse.setErrors(errorsRegistrationResponse);
+        }
+        return userRegistrationResponse;
+    }
+
     private String extracted(MultipartFile multipartFile, String path, boolean isAvatar,
                              boolean onlyRemove) throws Exception {
         Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
@@ -294,21 +338,17 @@ public class AuthCheckService {
                 "api_key", API_KEY,
                 "api_secret", API_SECRET,
                 "secure", SECURE));
-        if (onlyRemove)
-        {
+        if (onlyRemove) {
             if (isAvatar) {
                 path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME +
                         "/image/upload/c_fill,h_36,w_36/v1/", "");
-            }
-            else
-            {
+            } else {
                 path = path.replaceAll(String.format("https://res.cloudinary.com/%s/image/upload/v1/",
                         CLOUD_NAME), "");
             }
             cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
             return "";
-        }
-        else {
+        } else {
             String fullPath = "";
             String formatName = multipartFile.getOriginalFilename().substring(
                     multipartFile.getOriginalFilename().lastIndexOf(".") + 1);

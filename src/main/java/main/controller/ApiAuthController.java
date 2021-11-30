@@ -1,10 +1,7 @@
 package main.controller;
 
 import main.api.response.*;
-import main.request.ChangePasswordRequest;
-import main.request.LoginRequest;
-import main.request.RestoreRequest;
-import main.request.UserRequest;
+import main.request.*;
 import main.service.AuthCheckService;
 import main.service.SettingsService;
 import org.springframework.http.HttpStatus;
@@ -76,7 +73,6 @@ public class ApiAuthController {
 
     @PostMapping(value = "/profile/my", consumes = "multipart/form-data") //требуется авторизация
     @PreAuthorize("hasAuthority('user:write')")
-    @ResponseBody
     public ResponseEntity<UserRegistrationResponse> changeProfile
             (Principal principal,
              @RequestParam(value = "email") String email,
@@ -92,22 +88,13 @@ public class ApiAuthController {
                 password));
     }
 
-    @PostMapping(value = "/profile/my", consumes = "application/json") //требуется авторизация
+    @PostMapping("/profile/my") //требуется авторизация
     @PreAuthorize("hasAuthority('user:write')")
-    @ResponseBody
     public ResponseEntity<UserRegistrationResponse> changeProfileWithoutImage
             (Principal principal,
-             @RequestParam(value = "email") String email,
-             @RequestParam(value = "removePhoto") int removePhoto,
-             @RequestParam(value = "photo") MultipartFile multipartFile,
-             @RequestParam(value = "name") String name,
-             @RequestParam(value = "password", required = false) String password) throws Exception {
-        return ResponseEntity.ok(authCheckService.changeProfile(principal,
-                email,
-                removePhoto,
-                multipartFile,
-                name,
-                password));
+             @RequestBody EditeProfileRequest editeProfileRequest) {
+        return ResponseEntity.ok(authCheckService.changeProfileDeleteImage(principal,
+                editeProfileRequest));
     }
 
     @PostMapping("/auth/restore")
