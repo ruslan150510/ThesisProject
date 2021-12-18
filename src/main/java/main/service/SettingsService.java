@@ -69,9 +69,7 @@ public class SettingsService {
             statisticsResponse.setPostsCount((int) postOptional.stream().count());
             statisticsResponse.setLikesCount((int) postOptional.get().getPostVotesList().stream()
                     .filter(x -> x.getValue() == LIKE).count());
-            statisticsResponse.setFirstPublication(postRepository.
-                    findFirstPublicationById(user.getId()).get().
-                    getTime().toEpochSecond(ZoneOffset.UTC));
+            statisticsResponse.setFirstPublication(postOptional.get().getTime().toEpochSecond(ZoneOffset.UTC));
             return statisticsResponse;
         }
         catch (Exception exception)
@@ -87,18 +85,21 @@ public class SettingsService {
         int disLike =0;
         int viewCount = 0;
         int postCount = 0;
+        long date = 0;
         for (Post post: postIterrator) {
             disLike = disLike + (int) post.getPostVotesList().stream().filter(x -> x.getValue() == DISLIKE).count();
             like = like + (int) post.getPostVotesList().stream().filter(x -> x.getValue() == LIKE).count();
             viewCount = viewCount + post.getViewCount();
+            if (postCount == 0) {
+                date = post.getTime().toEpochSecond(ZoneOffset.UTC);
+            }
             postCount++;
         }
         statisticsResponse.setDislikesCount(disLike);
         statisticsResponse.setViewsCount(viewCount);
         statisticsResponse.setPostsCount(postCount);
         statisticsResponse.setLikesCount(like);
-        statisticsResponse.setFirstPublication(postRepository.
-                findFirstPublication().get().getTime().toEpochSecond(ZoneOffset.UTC));
+        statisticsResponse.setFirstPublication(date);
         return statisticsResponse;
     }
 }

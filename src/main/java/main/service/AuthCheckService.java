@@ -365,7 +365,8 @@ public class AuthCheckService {
                 fileUrl = cloudinary.url().transformation(new Transformation()
                         .width(IMAGE_HEIGHT_AND_WIDTH).height(IMAGE_HEIGHT_AND_WIDTH)
                         .crop("fill")).generate(fullPath + "." + formatName);
-                path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME + "/image/upload/c_fill,h_36,w_36/v1/", "");
+                path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME +
+                        "/image/upload/c_fill,h_36,w_36/v1/", "");
             } else {
                 fileUrl = cloudinary.url().generate(fullPath);
                 path = path.replaceAll(String.format("https://res.cloudinary.com/%s/image/upload/v1/", CLOUD_NAME), "");
