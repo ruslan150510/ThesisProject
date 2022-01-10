@@ -12,7 +12,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @SpringBootApplication
-//@SpringBootApplication(exclude={DataSourceAutoConfiguration.class})
 public class Main
 {
     public static void main(String[] args)
