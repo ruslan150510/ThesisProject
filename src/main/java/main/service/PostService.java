@@ -353,12 +353,12 @@ public class PostService {
                 comments.setParentId(commentRequest.getParentId());
             }
             comments.setText(commentRequest.getText());
-            comments.setPost(postRepository.findByIdAccepted(commentRequest.getPostId()).get());
+            comments.setPost(postRepository.findById(commentRequest.getPostId()).get());
             comments.setUser(user);
             comments.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
 
             newPostResponse.setId(commentsRepository.save(comments).getId());
-            newPostResponse.setResult(true);
+            //newPostResponse.setResult(true);
         } else {
             ErrorsPostResponse errorsPostResponse = new ErrorsPostResponse();
             errorsPostResponse.setText(TEXT_COMMENT_ERROR);
@@ -372,8 +372,8 @@ public class PostService {
         Response response = new Response();
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(
                 () -> new UsernameNotFoundException(principal.getName()));
-        if (user.getIsModerator().equals(1)) {
-            Post post = postRepository.findByIdAccepted(moderationRequest.getPostId()).get();
+        if (user.getIsModerator() == 1) {
+            Post post = postRepository.findById(moderationRequest.getPostId()).get();
             post.setModeratorId(user.getId());
             post.setModerationStatus(moderationRequest.getDecision().equals(Decision.decline)
                     ? Status.DECLINED : Status.ACCEPTED);
