@@ -1,8 +1,8 @@
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/db_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC}
-#    url: jdbc:mysql://localhost:3306/db_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/db_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC}
+    url: jdbc:mysql://localhost:3306/db_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     username: root
     password: P@$$w0rd
   jpa:
@@ -33,8 +33,8 @@ blog:
   copyrightFrom: 2005
 
 send:
-  localhost: akbashev-java-skillbox.herokuapp.com
-#  localhost: localhost:8080
+#  localhost: akbashev-java-skillbox.herokuapp.com
+  localhost: localhost:8080
 
 production:
   cloud_name: "hmslac4qf"
