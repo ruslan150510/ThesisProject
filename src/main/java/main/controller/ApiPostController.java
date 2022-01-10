@@ -85,13 +85,13 @@ public class ApiPostController {
 
     @GetMapping("/post/{id}")
     public ResponseEntity<PostResponse> getPostResponse(@PathVariable int id) {
-        if (postService.postResponse(id).equals(null)) {
+        if (postService.postResponse(id) == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(postService.postResponse(id));
     }
 
-    @GetMapping("/post/my")//требуется авторизация
+    @GetMapping("/post/my")
     @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getMyPosts(Principal principal,
@@ -101,7 +101,7 @@ public class ApiPostController {
         return ResponseEntity.ok(postService.getMyPosts(principal, offset, limit, status));
     }
 
-    @GetMapping("/post/moderation")//требуется авторизация + модератор
+    @GetMapping("/post/moderation")
     @PreAuthorize("hasAuthority('user:moderate')")
     @ResponseBody
     public ResponseEntity<OutputPostResponse> getModerationPosts(Principal principal,
@@ -111,23 +111,23 @@ public class ApiPostController {
             return ResponseEntity.ok(postService.getModerationPosts(principal, offset, limit, status));
     }
 
-    @PostMapping("/post")//требуется авторизация
+    @PostMapping("/post")
     @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<NewPostResponse> createNewPost(Principal principal,
                                                          @RequestBody NewPostRequest newPostRequest){
-        return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest, ID_DEFAULT));
+        return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest));
     }
 
-    @PutMapping("/post/{id}")//требуется авторизация + авторизация + модератор
-    @PreAuthorize("hasAuthority('user:moderate')")
+    @PutMapping("/post/{id}")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<NewPostResponse> putPost(Principal principal,
                                                 @RequestBody NewPostRequest newPostRequest,
                                                 @PathVariable int id) {
-        return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest, id));
+        return ResponseEntity.ok(postService.editNewPost(principal, newPostRequest, id));
     }
 
-    @PostMapping("/comment")//требуется авторизация
+    @PostMapping("/comment")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<NewPostResponse> addCommentPost(Principal principal,
                                                           @RequestBody CommentRequest commentRequest){
@@ -136,21 +136,21 @@ public class ApiPostController {
                         ? HttpStatus.BAD_REQUEST : HttpStatus.OK);
     }
 
-    @PostMapping("/moderation")//требуется модератор
+    @PostMapping("/moderation")
     @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<Response> moderationPost(Principal principal,
                                                    @RequestBody ModerationRequest moderationRequest){
         return ResponseEntity.ok(postService.moderationPost(principal, moderationRequest));
     }
 
-    @PostMapping("/post/like")//требуется авторизация
+    @PostMapping("/post/like")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Response> likePost(Principal principal, @RequestBody LikeRequest likeRequest)
     {
         return ResponseEntity.ok(postService.likePost(principal, likeRequest, LIKE));
     }
 
-    @PostMapping("/post/dislike")//требуется авторизация
+    @PostMapping("/post/dislike")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Response> dislikePost(Principal principal, @RequestBody LikeRequest likeRequest)
     {

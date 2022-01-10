@@ -136,6 +136,33 @@ public class PostService {
         return postResponse;
     }
 
+    public PostResponse postResponseHasAuthority(Principal principal, int id) {
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow(
+                () -> new UsernameNotFoundException(principal.getName()));
+        PostResponse postResponse = new PostResponse();
+        Optional<Post> postOptional = postRepository.findById(id);
+        if (!postOptional.isPresent()) {
+            return null;
+        }
+        postResponse.setPostId(id);
+        postResponse.setTitle(postOptional.get().getTitle());
+        postResponse.setText(postOptional.get().getText());
+        postResponse.setIsActive(postOptional.get().getIsActive());
+        postResponse.setTimestamp(postOptional.get().getTime().toEpochSecond(ZoneOffset.UTC));
+        postResponse.setLikeCount((int) postOptional.get().getPostVotesList().stream()
+                .filter(x -> x.getValue() == 1).count());
+        postResponse.setDislikeCount((int) postOptional.get().getPostVotesList().stream()
+                .filter(x -> x.getValue() == -1).count());
+        postResponse.setUserDto(convertToUserDto(user));
+        postResponse.setCommentDtoList(MapperUtil.convertList(postOptional.get().
+                getCommentList(), this::convertToCommentDto));
+        postOptional.get().getTagList().forEach((tag) -> {
+            postResponse.getTags().add(tag.getName());
+        });
+        postRepository.iterableViewCount(id);
+        return postResponse;
+    }
+
     private PostDto convertToPostDto(Post post) {
         if (post.getText().length() > STRING_LENGHT) {
             post.setText(post.getText().substring(STRING_START_INDEX, STRING_LENGHT));
@@ -223,7 +250,7 @@ public class PostService {
         return outputPostResponse;
     }
 
-    public NewPostResponse addNewPost(Principal principal, NewPostRequest newPostRequest, Integer id) {
+    public NewPostResponse addNewPost(Principal principal, NewPostRequest newPostRequest) {
         NewPostResponse newPostResponse = new NewPostResponse();
         if ((newPostRequest.getTitle().length() >= MIN_TITLE_LENGTH)
                 && (newPostRequest.getText().length() > MIN_TEXT_LENGTH)) {
@@ -232,22 +259,60 @@ public class PostService {
             long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 
             Post post = new Post();
-            if (id != ID_DEFAULT) {
-                if (postRepository.findById(id).isPresent()) {
-                    post.setId(id);
-                    if (postRepository.findById(id).get().getUser().getId().equals(user.getId())) {
-                        post.setUser(user);
-                    } else {
-                        post.setModeratorId(user.getId());
-                    }
-                }
-            } else {
-                post.setUser(user);
-            }
+            post.setUser(user);
+            post.setModerationStatus(Status.NEW);
             post.setTitle(newPostRequest.getTitle());
             post.setText(newPostRequest.getText());
             post.setIsActive(newPostRequest.getActive());
+            post.setTime(timestamp > newPostRequest.getTimestamp() ?
+                    LocalDateTime.ofEpochSecond(newPostRequest.getTimestamp(), 100, ZoneOffset.UTC)
+                    : LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
+            post.setViewCount(0);
+
+            newPostRequest.getTags().forEach(tag ->
+            {
+                if (!tagRepository.findByTagName(tag).isPresent()) {
+                    Tag tagNew = new Tag();
+                    tagNew.setName(tag);
+                    tagRepository.save(tagNew);
+                }
+                post.addTag(tagRepository.findByTagName(tag).get());
+            });
+            postRepository.save(post);
+            newPostResponse.setResult(true);
+        } else {
+            ErrorsPostResponse errorsNewPostResponse = new ErrorsPostResponse();
+            errorsNewPostResponse.setText(
+                    newPostRequest.getText().length() < MIN_TEXT_LENGTH ? TEXT_ERROR : null);
+            errorsNewPostResponse.setTitle(
+                    newPostRequest.getTitle().length() < MIN_TITLE_LENGTH ? TITLE_ERROR : null);
+
+            newPostResponse.setResult(false);
+            newPostResponse.setErrors(errorsNewPostResponse);
+        }
+        return newPostResponse;
+    }
+
+    public NewPostResponse editNewPost(Principal principal, NewPostRequest newPostRequest, Integer id) {
+        NewPostResponse newPostResponse = new NewPostResponse();
+        if ((newPostRequest.getTitle().length() >= MIN_TITLE_LENGTH)
+                && (newPostRequest.getText().length() > MIN_TEXT_LENGTH)) {
+            User user = userRepository.findByEmail(principal.getName()).orElseThrow(
+                    () -> new UsernameNotFoundException(principal.getName()));
+            long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+
+            Post post = postRepository.findById(id).get();
+            if (postRepository.findById(id).isPresent()) {
+                if (postRepository.findById(id).get().getUser().getId().equals(user.getId())) {
+                    post.setUser(user);
+                } else {
+                    post.setModeratorId(user.getId());
+                }
+            }
             post.setModerationStatus(Status.NEW);
+            post.setTitle(newPostRequest.getTitle());
+            post.setText(newPostRequest.getText());
+            post.setIsActive(newPostRequest.getActive());
             post.setTime(timestamp > newPostRequest.getTimestamp() ?
                     LocalDateTime.ofEpochSecond(newPostRequest.getTimestamp(), 100, ZoneOffset.UTC)
                     : LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
@@ -288,7 +353,7 @@ public class PostService {
                 comments.setParentId(commentRequest.getParentId());
             }
             comments.setText(commentRequest.getText());
-            comments.setPost(postRepository.findById(commentRequest.getPostId()).get());
+            comments.setPost(postRepository.findByIdAccepted(commentRequest.getPostId()).get());
             comments.setUser(user);
             comments.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
 
@@ -308,7 +373,7 @@ public class PostService {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(
                 () -> new UsernameNotFoundException(principal.getName()));
         if (user.getIsModerator().equals(1)) {
-            Post post = postRepository.findById(moderationRequest.getPostId()).get();
+            Post post = postRepository.findByIdAccepted(moderationRequest.getPostId()).get();
             post.setModeratorId(user.getId());
             post.setModerationStatus(moderationRequest.getDecision().equals(Decision.decline)
                     ? Status.DECLINED : Status.ACCEPTED);

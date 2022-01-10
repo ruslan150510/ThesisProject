@@ -57,15 +57,15 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
 
     @Query("select p from Post p where is_active = 1 and moderation_status in ('ACCEPTED') " +
             "and p.id = :id")
+    Optional<Post> findByIdAccepted(@Param("id") int id);
+
+    @Query("select p from Post p where p.id = :id")
     Optional<Post> findById(@Param("id") int id);
 
     @Transactional
     @Modifying
     @Query("update Post p Set p.viewCount = p.viewCount + 1 where p.id = :id")
     void iterableViewCount(@Param("id") int id);
-
-//    @Query("select p from Post p where moderation_status in ('NEW')")
-//    List<Post> findByModerationPost();
 
     @Query("select p from Post p where user_id = :user_id and is_active = 0")
     List<Post> findMyInactivePost(@Param("user_id") int userId);

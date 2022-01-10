@@ -41,7 +41,7 @@ public class ApiGeneralController {
         return settingsService.getGlobalSettings();
     }
 
-    @GetMapping("/statistics/my")//требуется авторизация
+    @GetMapping("/statistics/my")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<StatisticsResponse> myStatisticsResponse(Principal principal) {
         StatisticsResponse statisticsResponse = settingsService.getMyStatistics(principal);

@@ -55,7 +55,7 @@ public class ApiAuthController {
         return ResponseEntity.ok(authCheckService.logoutResponse(principal));
     }
 
-    @PostMapping(value = "/image", consumes = "multipart/form-data") //требуется авторизация
+    @PostMapping(value = "/image", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('user:write')")
     @ResponseBody
     public ResponseEntity<?> uploadImage(Principal principal,
@@ -71,7 +71,7 @@ public class ApiAuthController {
         }
     }
 
-    @PostMapping(value = "/profile/my", consumes = "multipart/form-data") //требуется авторизация
+    @PostMapping(value = "/profile/my", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<UserRegistrationResponse> changeProfile
             (Principal principal,
@@ -88,7 +88,7 @@ public class ApiAuthController {
                 password));
     }
 
-    @PostMapping("/profile/my") //требуется авторизация
+    @PostMapping("/profile/my")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<UserRegistrationResponse> changeProfileWithoutImage
             (Principal principal,
