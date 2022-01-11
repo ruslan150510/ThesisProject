@@ -35,10 +35,8 @@ public class PostService {
     private final static Integer MIN_TITLE_LENGTH = 3;
     private final static String TEXT_ERROR = "Текст публикации слишком короткий";
     private final static Integer MIN_TEXT_LENGTH = 50;
-    private static final Integer ID_DEFAULT = -1;
     private final static String TEXT_COMMENT_ERROR = "Текст комментария не задан или слишком короткий";
     private final static String ID_COMMENT_ERROR = "комментарий и/или пост не существуют";
-    private static final byte LIKE = 1;
 
     @Autowired
     private PostRepository postRepository;
@@ -358,7 +356,6 @@ public class PostService {
             comments.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
 
             newPostResponse.setId(commentsRepository.save(comments).getId());
-            //newPostResponse.setResult(true);
         } else {
             ErrorsPostResponse errorsPostResponse = new ErrorsPostResponse();
             errorsPostResponse.setText(TEXT_COMMENT_ERROR);
@@ -385,19 +382,27 @@ public class PostService {
 
     public Response likePost(Principal principal, LikeRequest likeRequest, Byte like) {
         Response response = new Response();
+        long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
         try {
             User user = userRepository.findByEmail(principal.getName()).orElseThrow(
                     () -> new UsernameNotFoundException(principal.getName()));
             Optional<PostVotes> postVotes = postVotesRepository.
                     findByUserIdAndPostId(user.getId(), likeRequest.getPostId());
+            PostVotes postVotesNew;
             if (!postVotes.isPresent()) {
-                postVotes.get().setValue(like);
-                postVotesRepository.save(postVotes.get());
+                postVotesNew = new PostVotes();
+                postVotesNew.setPost(postRepository.findById(likeRequest.getPostId()).get());
+                postVotesNew.setUser(user);
+                postVotesNew.setValue(like);
+                postVotesNew.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
+                postVotesRepository.save(postVotesNew);
                 response.setResult(true);
             } else {
-                if ((postVotes.get().getValue() != LIKE) && (like == LIKE)) {
-                    postVotes.get().setValue(like);
-                    postVotesRepository.save(postVotes.get());
+                postVotesNew = postVotes.get();
+                if (postVotesNew.getValue() != like) {
+                    postVotesNew.setValue(like);
+                    postVotesNew.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
+                    postVotesRepository.save(postVotesNew);
                     response.setResult(true);
                 } else {
                     response.setResult(false);
