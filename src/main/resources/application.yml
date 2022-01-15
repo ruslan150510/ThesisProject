@@ -3,26 +3,24 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/db_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC}
 #    url: jdbc:mysql://localhost:3306/db_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-    username: root
-    password: P@$$w0rd
+    username: ${USERNAME}
+    password: ${PASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
     show-sql: true
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
-  mail:
-    username: fo4test@yandex.ru
-    password: p@$$w0rd
-    host: smtp.yandex.ru
-    port: 465
-    protocol: smtps
+mail:
+  username: ${MAIL_USERNAME}
+  password: ${MAIL_PASSWORD}
+  host: smtp.yandex.ru
+  port: 465
+  protocol: smtps
+  debug: true
 
 server:
   port: ${PORT:8080}
-
-mail:
-  debug: true
 
 blog:
   title: DevPub
@@ -37,7 +35,7 @@ send:
 #  localhost: localhost:8080
 
 production:
-  cloud_name: "hmslac4qf"
-  api_key: "773262953886412"
-  api_secret: "qLdez354SSbhbMhALMQ6tOE3MaM"
+  cloud_name: ${CLOUDNAME}
+  api_key: ${API_KEY}
+  api_secret: ${API_SECRET}
   secure: true

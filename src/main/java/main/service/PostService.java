@@ -36,7 +36,7 @@ public class PostService {
     private final static String TEXT_ERROR = "Текст публикации слишком короткий";
     private final static Integer MIN_TEXT_LENGTH = 50;
     private final static String TEXT_COMMENT_ERROR = "Текст комментария не задан или слишком короткий";
-    private final static String ID_COMMENT_ERROR = "комментарий и/или пост не существуют";
+    private static final Integer ID_DEFAULT = -1;
 
     @Autowired
     private PostRepository postRepository;
@@ -248,64 +248,26 @@ public class PostService {
         return outputPostResponse;
     }
 
-    public NewPostResponse addNewPost(Principal principal, NewPostRequest newPostRequest) {
+    public NewPostResponse addNewPost(Principal principal, NewPostRequest newPostRequest, Integer id) {
         NewPostResponse newPostResponse = new NewPostResponse();
         if ((newPostRequest.getTitle().length() >= MIN_TITLE_LENGTH)
                 && (newPostRequest.getText().length() > MIN_TEXT_LENGTH)) {
             User user = userRepository.findByEmail(principal.getName()).orElseThrow(
                     () -> new UsernameNotFoundException(principal.getName()));
             long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
-
-            Post post = new Post();
-            post.setUser(user);
-            post.setModerationStatus(Status.NEW);
-            post.setTitle(newPostRequest.getTitle());
-            post.setText(newPostRequest.getText());
-            post.setIsActive(newPostRequest.getActive());
-            post.setTime(timestamp > newPostRequest.getTimestamp() ?
-                    LocalDateTime.ofEpochSecond(newPostRequest.getTimestamp(), 100, ZoneOffset.UTC)
-                    : LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
-            post.setViewCount(0);
-
-            newPostRequest.getTags().forEach(tag ->
-            {
-                if (!tagRepository.findByTagName(tag).isPresent()) {
-                    Tag tagNew = new Tag();
-                    tagNew.setName(tag);
-                    tagRepository.save(tagNew);
+            Post post;
+            if (id != ID_DEFAULT) {
+                post = postRepository.findById(id).get();
+                if (postRepository.findById(id).isPresent()) {
+                    if (postRepository.findById(id).get().getUser().getId().equals(user.getId())) {
+                        post.setUser(user);
+                    } else {
+                        post.setModeratorId(user.getId());
+                    }
                 }
-                post.addTag(tagRepository.findByTagName(tag).get());
-            });
-            postRepository.save(post);
-            newPostResponse.setResult(true);
-        } else {
-            ErrorsPostResponse errorsNewPostResponse = new ErrorsPostResponse();
-            errorsNewPostResponse.setText(
-                    newPostRequest.getText().length() < MIN_TEXT_LENGTH ? TEXT_ERROR : null);
-            errorsNewPostResponse.setTitle(
-                    newPostRequest.getTitle().length() < MIN_TITLE_LENGTH ? TITLE_ERROR : null);
-
-            newPostResponse.setResult(false);
-            newPostResponse.setErrors(errorsNewPostResponse);
-        }
-        return newPostResponse;
-    }
-
-    public NewPostResponse editNewPost(Principal principal, NewPostRequest newPostRequest, Integer id) {
-        NewPostResponse newPostResponse = new NewPostResponse();
-        if ((newPostRequest.getTitle().length() >= MIN_TITLE_LENGTH)
-                && (newPostRequest.getText().length() > MIN_TEXT_LENGTH)) {
-            User user = userRepository.findByEmail(principal.getName()).orElseThrow(
-                    () -> new UsernameNotFoundException(principal.getName()));
-            long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
-
-            Post post = postRepository.findById(id).get();
-            if (postRepository.findById(id).isPresent()) {
-                if (postRepository.findById(id).get().getUser().getId().equals(user.getId())) {
-                    post.setUser(user);
-                } else {
-                    post.setModeratorId(user.getId());
-                }
+            } else {
+                post = new Post();
+                post.setUser(user);
             }
             post.setModerationStatus(Status.NEW);
             post.setTitle(newPostRequest.getTitle());
@@ -315,7 +277,6 @@ public class PostService {
                     LocalDateTime.ofEpochSecond(newPostRequest.getTimestamp(), 100, ZoneOffset.UTC)
                     : LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));
             post.setViewCount(0);
-
             newPostRequest.getTags().forEach(tag ->
             {
                 if (!tagRepository.findByTagName(tag).isPresent()) {
@@ -333,7 +294,6 @@ public class PostService {
                     newPostRequest.getText().length() < MIN_TEXT_LENGTH ? TEXT_ERROR : null);
             errorsNewPostResponse.setTitle(
                     newPostRequest.getTitle().length() < MIN_TITLE_LENGTH ? TITLE_ERROR : null);
-
             newPostResponse.setResult(false);
             newPostResponse.setErrors(errorsNewPostResponse);
         }
@@ -388,9 +348,8 @@ public class PostService {
                     () -> new UsernameNotFoundException(principal.getName()));
             Optional<PostVotes> postVotes = postVotesRepository.
                     findByUserIdAndPostId(user.getId(), likeRequest.getPostId());
-            PostVotes postVotesNew;
+            PostVotes postVotesNew = !postVotes.isPresent() ? new PostVotes() : postVotes.get();
             if (!postVotes.isPresent()) {
-                postVotesNew = new PostVotes();
                 postVotesNew.setPost(postRepository.findById(likeRequest.getPostId()).get());
                 postVotesNew.setUser(user);
                 postVotesNew.setValue(like);
@@ -398,7 +357,6 @@ public class PostService {
                 postVotesRepository.save(postVotesNew);
                 response.setResult(true);
             } else {
-                postVotesNew = postVotes.get();
                 if (postVotesNew.getValue() != like) {
                     postVotesNew.setValue(like);
                     postVotesNew.setTime(LocalDateTime.ofEpochSecond(timestamp, 100, ZoneOffset.UTC));

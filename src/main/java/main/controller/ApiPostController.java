@@ -117,7 +117,7 @@ public class ApiPostController {
     @ResponseBody
     public ResponseEntity<NewPostResponse> createNewPost(Principal principal,
                                                          @RequestBody NewPostRequest newPostRequest){
-        return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest));
+        return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest, ID_DEFAULT));
     }
 
     @PutMapping("/post/{id}")
@@ -125,7 +125,7 @@ public class ApiPostController {
     public ResponseEntity<NewPostResponse> putPost(Principal principal,
                                                 @RequestBody NewPostRequest newPostRequest,
                                                 @PathVariable int id) {
-        return ResponseEntity.ok(postService.editNewPost(principal, newPostRequest, id));
+        return ResponseEntity.ok(postService.addNewPost(principal, newPostRequest, id));
     }
 
     @PostMapping("/comment")

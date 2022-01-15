@@ -5,8 +5,8 @@ import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.github.cage.Cage;
 import com.github.cage.GCage;
-import com.github.cage.IGenerator;
 import com.github.cage.image.Painter;
+import lombok.Setter;
 import main.api.response.*;
 import main.model.CaptchaCodes;
 import main.model.User;
@@ -19,6 +19,7 @@ import main.request.LoginRequest;
 import main.request.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -29,7 +30,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.*;
 import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -41,9 +41,10 @@ import java.util.Random;
 import java.util.UUID;
 
 @Service
+@Setter
+@ConfigurationProperties(prefix = "send")
 public class AuthCheckService {
-    @Value("${send.localhost}")
-    private String LOCALHOST_RESTORE;
+    private String localhost;
 
     @Value("${production.cloud_name}")
     private String CLOUD_NAME;
@@ -74,9 +75,6 @@ public class AuthCheckService {
 
     private final AuthenticationManager authenticationManager;
 
-    private static final String EMAIL_FROM = "support@gmail.com";
-    private static final String EMAIL_SUBJECT = "Password restore";
-
     @Autowired
     private MailSender mailSender;
 
@@ -105,22 +103,15 @@ public class AuthCheckService {
     public CaptchaResponse getSecretCode() throws IOException {
         CaptchaCodes captchaCodes = new CaptchaCodes();
         CaptchaResponse captchaResponse = new CaptchaResponse();
-
         LocalDateTime time = ZonedDateTime.now().toLocalDateTime();
-        captchaCodesRepository.deleteByOldRecord(time.minusHours(1)
-                .atOffset(ZoneOffset.UTC).toLocalDateTime());
+        captchaCodesRepository.deleteByOldRecord(time.minusHours(1).atOffset(ZoneOffset.UTC).toLocalDateTime());
 
         Cage oldCage = new GCage();
         Random rnd = new Random();
         Painter painter = new Painter(100, 35, oldCage.getPainter().getBackground(),
-                oldCage.getPainter().getQuality(), oldCage.getPainter().getEffectConfig(),
-                rnd);
-        IGenerator<Font> fonts = oldCage.getFonts();
-        IGenerator<Color> foregrounds = oldCage.getForegrounds();
-        String format = oldCage.getFormat();
-        Float compressRatio = oldCage.getCompressRatio();
-        IGenerator<String> tokenGenerator = oldCage.getTokenGenerator();
-        Cage cage = new Cage(painter, fonts, foregrounds, format, compressRatio, tokenGenerator, rnd);
+                oldCage.getPainter().getQuality(), oldCage.getPainter().getEffectConfig(), rnd);
+        Cage cage = new Cage(painter, oldCage.getFonts(), oldCage.getForegrounds(), oldCage.getFormat(),
+                oldCage.getCompressRatio(), oldCage.getTokenGenerator(), rnd);
 
         String secret = cage.getTokenGenerator().next()
                 .substring(0, cage.getTokenGenerator().next().length() - 4);
@@ -131,7 +122,6 @@ public class AuthCheckService {
         captchaCodes.setCode(secret);
         captchaCodes.setSecretCode(secret);
         captchaCodesRepository.save(captchaCodes);
-
         captchaResponse.setSecret(secret);
         captchaResponse.setImage(IMAGE_START_STRING + imageEncoding);
         return captchaResponse;
@@ -155,19 +145,24 @@ public class AuthCheckService {
             userRepository.save(user);
             userRegistrationResponse.setResult(true);
         } else {
-            ErrorsRegistrationResponse errorsRegistrationResponse = new ErrorsRegistrationResponse();
-            errorsRegistrationResponse.setEmail(
-                    userRepository.findByEmail(userRequest.getEmail()).isPresent() ? EMAIL : null);
-            errorsRegistrationResponse.setName(userRequest.getUserName().replaceAll("[0-9]", "")
-                    .replaceAll(" ", "").length() == 0 ? NAME : null);
-            errorsRegistrationResponse.setPassword(userRequest.getPassword().length() < PASSWORD_LENGTH
-                    ? PASSWORD : null);
-            errorsRegistrationResponse.setCaptcha(
-                    !userRequest.getCaptchaSecret().equals(userRequest.getCaptcha()) ? CAPTCHA : null);
-            userRegistrationResponse.setResult(false);
-            userRegistrationResponse.setErrors(errorsRegistrationResponse);
+            fillErrorUserRegistrationResponse(userRequest, userRegistrationResponse);
         }
         return userRegistrationResponse;
+    }
+
+    private void fillErrorUserRegistrationResponse(UserRequest userRequest,
+                                                   UserRegistrationResponse userRegistrationResponse) {
+        ErrorsRegistrationResponse errorsRegistrationResponse = new ErrorsRegistrationResponse();
+        errorsRegistrationResponse.setEmail(
+                userRepository.findByEmail(userRequest.getEmail()).isPresent() ? EMAIL : null);
+        errorsRegistrationResponse.setName(userRequest.getUserName().replaceAll("[0-9]", "")
+                .replaceAll(" ", "").length() == 0 ? NAME : null);
+        errorsRegistrationResponse.setPassword(userRequest.getPassword().length() < PASSWORD_LENGTH
+                ? PASSWORD : null);
+        errorsRegistrationResponse.setCaptcha(
+                !userRequest.getCaptchaSecret().equals(userRequest.getCaptcha()) ? CAPTCHA : null);
+        userRegistrationResponse.setResult(false);
+        userRegistrationResponse.setErrors(errorsRegistrationResponse);
     }
 
     public LoginResponse loginResponse(LoginRequest loginRequest) {
@@ -237,15 +232,12 @@ public class AuthCheckService {
 
         String imageFormat = changePhoto ? multipartFile.getOriginalFilename()
                 .substring(multipartFile.getOriginalFilename().lastIndexOf(".") + 1) : "";
-        if (((password == null)
-                || (password != null && password.length() < PASSWORD_LENGTH))
-                && (user.getEmail().equals(email) ||
-                (!user.getEmail().equals(email)
-                        && !userRepository.findByEmailExcludId(email, user.getId()).isPresent()))
-                && ((user.getName().equals(name)) ||
-                (!user.getName().equals(name)
-                        && name.replaceAll("[0-9]", "")
-                        .replaceAll(" ", "").length() > 0))
+        if (((password == null) || (password != null && password.length() < PASSWORD_LENGTH))
+                && (user.getEmail().equals(email) || (!user.getEmail().equals(email)
+                && !userRepository.findByEmailExcludId(email, user.getId()).isPresent()))
+                && ((user.getName().equals(name)) || (!user.getName().equals(name)
+                && name.replaceAll("[0-9]", "")
+                .replaceAll(" ", "").length() > 0))
                 && ((multipartFile.isEmpty())
                 || (!multipartFile.isEmpty() && multipartFile.getSize() < IMAGE_MAX_SIZE))) {
             if (!user.getName().equals(name)) {
@@ -258,29 +250,31 @@ public class AuthCheckService {
                 user.setPassword(passwordEncoder().encode(password));
             }
             if (changePhoto) {
-                if (removePhoto == 1) {
-                    user.setPhoto("");
-                } else {
-                    user.setPhoto(extracted(multipartFile, user.getPhoto(), IS_AVATAR, false));
-                }
+                user.setPhoto(removePhoto == 1 ? "" :
+                        extracted(multipartFile, user.getPhoto(), IS_AVATAR, false));
             }
             userRepository.save(user);
             userRegistrationResponse.setResult(true);
         } else {
-            ErrorsRegistrationResponse errorsRegistrationResponse = new ErrorsRegistrationResponse();
-            errorsRegistrationResponse.setEmail(!user.getEmail().equals(email)
-                    && userRepository.findByEmailExcludId(email, user.getId()).isPresent() ? EMAIL : null);
-            errorsRegistrationResponse.setName(!user.getName().equals(name) &&
-                    name.replaceAll("[0-9]", "")
-                            .replaceAll(" ", "").length() == 0 ? NAME : null);
-            errorsRegistrationResponse.setPassword(password != null &&
-                    password.length() < PASSWORD_LENGTH ? PASSWORD : null);
-            errorsRegistrationResponse.setPhoto(!multipartFile.isEmpty() &&
-                    multipartFile.getSize() > IMAGE_MAX_SIZE ? PHOTO : null);
-            userRegistrationResponse.setResult(false);
-            userRegistrationResponse.setErrors(errorsRegistrationResponse);
+            fillErrorEditProfileResponse(email, multipartFile, name, password,
+                    userRegistrationResponse, user);
         }
         return userRegistrationResponse;
+    }
+
+    private void fillErrorEditProfileResponse(String email, MultipartFile multipartFile, String name, String password, UserRegistrationResponse userRegistrationResponse, User user) {
+        ErrorsRegistrationResponse errorsRegistrationResponse = new ErrorsRegistrationResponse();
+        errorsRegistrationResponse.setEmail(!user.getEmail().equals(email)
+                && userRepository.findByEmailExcludId(email, user.getId()).isPresent() ? EMAIL : null);
+        errorsRegistrationResponse.setName(!user.getName().equals(name) &&
+                name.replaceAll("[0-9]", "")
+                        .replaceAll(" ", "").length() == 0 ? NAME : null);
+        errorsRegistrationResponse.setPassword(password != null &&
+                password.length() < PASSWORD_LENGTH ? PASSWORD : null);
+        errorsRegistrationResponse.setPhoto(!multipartFile.isEmpty() &&
+                multipartFile.getSize() > IMAGE_MAX_SIZE ? PHOTO : null);
+        userRegistrationResponse.setResult(false);
+        userRegistrationResponse.setErrors(errorsRegistrationResponse);
     }
 
     public UserRegistrationResponse changeProfileDeleteImage(Principal principal,
@@ -316,17 +310,8 @@ public class AuthCheckService {
             userRepository.save(user);
             userRegistrationResponse.setResult(true);
         } else {
-            ErrorsRegistrationResponse errorsRegistrationResponse = new ErrorsRegistrationResponse();
-            errorsRegistrationResponse.setEmail(!user.getEmail().equals(editeProfileRequest.getEmail())
-                    && userRepository.findByEmailExcludId(editeProfileRequest.getEmail(),
-                    user.getId()).isPresent() ? EMAIL : null);
-            errorsRegistrationResponse.setName(!user.getName().equals(name) &&
-                    name.replaceAll("[0-9]", "")
-                            .replaceAll(" ", "").length() == 0 ? NAME : null);
-            errorsRegistrationResponse.setPassword(editeProfileRequest.getPassword() != null &&
-                    editeProfileRequest.getPassword().length() < PASSWORD_LENGTH ? PASSWORD : null);
-            userRegistrationResponse.setResult(false);
-            userRegistrationResponse.setErrors(errorsRegistrationResponse);
+            fillErrorEditProfileResponse(editeProfileRequest.getEmail(), null, name,
+                    editeProfileRequest.getPassword(), userRegistrationResponse, user);
         }
         return userRegistrationResponse;
     }
@@ -334,10 +319,8 @@ public class AuthCheckService {
     private String extracted(MultipartFile multipartFile, String path, boolean isAvatar,
                              boolean onlyRemove) throws Exception {
         Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", CLOUD_NAME,
-                "api_key", API_KEY,
-                "api_secret", API_SECRET,
-                "secure", SECURE));
+                "cloud_name", CLOUD_NAME, "api_key", API_KEY,
+                "api_secret", API_SECRET, "secure", SECURE));
         if (onlyRemove) {
             if (isAvatar) {
                 path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME +
@@ -353,9 +336,8 @@ public class AuthCheckService {
             String formatName = multipartFile.getOriginalFilename().substring(
                     multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
             String randomNameFolder = UUID.randomUUID().toString();
-            fullPath = randomNameFolder.substring(0, 2);
-            fullPath = fullPath + "/" + randomNameFolder.substring(2, 4);
-            fullPath = fullPath + "/" + randomNameFolder.substring(4, 6);
+            fullPath = randomNameFolder.substring(0, 2) + "/" + randomNameFolder.substring(2, 4)
+                    + "/" + randomNameFolder.substring(4, 6);
             String fileName = randomNameFolder.substring(6);
             fullPath = fullPath + "/" + fileName;
             Map params = ObjectUtils.asMap("public_id", fullPath);
@@ -402,7 +384,7 @@ public class AuthCheckService {
             user.setCode(code);
             userRepository.save(user);
             mailSender.send(email,
-                    String.format("http://%s/login/change-password/%s", LOCALHOST_RESTORE, code));
+                    String.format("http://%s/login/change-password/%s", localhost, code));
             response.setResult(true);
         } catch (Exception exception) {
             response.setResult(false);
