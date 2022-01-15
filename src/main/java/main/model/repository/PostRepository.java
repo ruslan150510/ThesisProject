@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface PostRepository extends CrudRepository<Post, Integer> {
@@ -36,6 +37,10 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
             nativeQuery = true)
     List<Post> findAllByQuery(@Param("offset") int offset, @Param("limit") int limit,
                               @Param("query") String query);
+
+    @Query("select year(p.time) from Post p where is_active = 1 and moderation_status in ('ACCEPTED') " +
+           "group by year(time)")
+    Set<Integer> findAllYears();
 
     @Query("select p from Post p where is_active = 1 and moderation_status in ('ACCEPTED') " +
             "and year(time) = :year")

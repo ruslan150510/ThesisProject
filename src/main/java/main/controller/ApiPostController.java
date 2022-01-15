@@ -61,7 +61,8 @@ public class ApiPostController {
 
     @GetMapping("/calendar")
     @ResponseBody
-    public ResponseEntity<CalendarResponse> getCalendarResponse(@RequestParam Integer year) {
+    public ResponseEntity<CalendarResponse> getCalendarResponse(
+            @RequestParam(defaultValue = "2021") Integer year) {
         return ResponseEntity.ok(calendarService.getCalendarResponse(year));
     }
 
