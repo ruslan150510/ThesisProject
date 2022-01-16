@@ -35,7 +35,7 @@ send:
 #  localhost: localhost:8080
 
 production:
-  cloud_name: ${CLOUDNAME}
+  cloud_name: "hmslac4qf"
   api_key: ${API_KEY}
   api_secret: ${API_SECRET}
   secure: true
