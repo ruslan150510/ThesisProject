@@ -8,6 +8,7 @@ import com.github.cage.GCage;
 import com.github.cage.image.Painter;
 import lombok.Setter;
 import main.api.response.*;
+import main.config.CloudinaryConfig;
 import main.model.CaptchaCodes;
 import main.model.User;
 import main.model.repository.CaptchaCodesRepository;
@@ -46,15 +47,6 @@ import java.util.UUID;
 public class AuthCheckService {
     private String localhost;
 
-    @Value("${production.cloud_name}")
-    private String CLOUD_NAME;
-    @Value("${production.api_key}")
-    private String API_KEY;
-    @Value("${production.api_secret}")
-    private String API_SECRET;
-    @Value("${production.secure}")
-    private Boolean SECURE;
-
     private static final String IMAGE_START_STRING = "data:image/png;base64, ";
 
     private static final String EMAIL = "Этот e-mail уже зарегистрирован";
@@ -86,6 +78,9 @@ public class AuthCheckService {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private CloudinaryConfig cloudinaryConfig;
 
     @Autowired
     public AuthCheckService(AuthenticationManager authenticationManager) {
@@ -318,16 +313,14 @@ public class AuthCheckService {
 
     private String extracted(MultipartFile multipartFile, String path, boolean isAvatar,
                              boolean onlyRemove) throws Exception {
-        Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", CLOUD_NAME, "api_key", API_KEY,
-                "api_secret", API_SECRET, "secure", SECURE));
+        Cloudinary cloudinary = cloudinaryConfig.getConnect();
         if (onlyRemove) {
             if (isAvatar) {
-                path = path.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME +
+                path = path.replaceAll("https://res.cloudinary.com/" + cloudinaryConfig.getCloudName() +
                         "/image/upload/c_fill,h_36,w_36/v1/", "");
             } else {
                 path = path.replaceAll(String.format("https://res.cloudinary.com/%s/image/upload/v1/",
-                        CLOUD_NAME), "");
+                        cloudinaryConfig.getCloudName()), "");
             }
             cloudinary.api().deleteAllResources(ObjectUtils.asMap("public_id", path));
             return "";
@@ -347,12 +340,13 @@ public class AuthCheckService {
                 fileUrl = cloudinary.url().transformation(new Transformation()
                         .width(IMAGE_HEIGHT_AND_WIDTH).height(IMAGE_HEIGHT_AND_WIDTH)
                         .crop("fill")).generate(fullPath + "." + formatName);
-                path = fileUrl.replaceAll("https://res.cloudinary.com/" + CLOUD_NAME +
-                        "/image/upload/c_fill,h_36,w_36/v1/", "");
+                path = fileUrl.replaceAll("https://res.cloudinary.com/" + cloudinaryConfig.getCloudName()
+                        + "/image/upload/c_fill,h_36,w_36/v1/", "");
             } else {
                 fileUrl = cloudinary.url().generate(fullPath);
                 path = fileUrl.replaceAll(String.
-                        format("https://res.cloudinary.com/%s/image/upload/v1/", CLOUD_NAME), "");
+                        format("https://res.cloudinary.com/%s/image/upload/v1/", cloudinaryConfig.getCloudName()
+                        ), "");
             }
             return fileUrl;
         }

@@ -36,6 +36,6 @@ send:
 
 production:
   cloud_name: "hmslac4qf"
-  api_key: ${API_KEY}
-  api_secret: ${API_SECRET}
+  api_key: "773262953886412"
+  api_secret: "qLdez354SSbhbMhALMQ6tOE3MaM"
   secure: true
