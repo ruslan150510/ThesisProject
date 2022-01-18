@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class PostService {
@@ -162,8 +164,9 @@ public class PostService {
     }
 
     private PostDto convertToPostDto(Post post) {
-        if (post.getText().length() > STRING_LENGHT) {
-            post.setText(post.getText().substring(STRING_START_INDEX, STRING_LENGHT));
+        String textPost = textNormalization(post.getText());
+        if (textPost.length() > STRING_LENGHT) {
+            post.setText(textPost.substring(STRING_START_INDEX, STRING_LENGHT));
         }
         PostDto postDto = modelMapper.map(post, PostDto.class);
         postDto.setTimestamp(post.getTime().toEpochSecond(ZoneOffset.UTC));
@@ -173,6 +176,11 @@ public class PostService {
                 .filter(x -> x.getValue() == -1).count());
         postDto.setUserDto(convertToUserDto(post.getUser()));
         return postDto;
+    }
+
+    private String textNormalization(String text){
+        String normalization = Pattern.compile("(\\<.+?\\>)").matcher(text).replaceAll("");
+        return normalization;
     }
 
     private UserDto convertToUserDto(User user) {
